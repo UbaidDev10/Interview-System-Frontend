@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import useLogin from '../hooks/useLogin';
+import useLogin from '../hooks/admin/useLogin';
 
 const Login = () => {
   const { login } = useLogin();
@@ -20,8 +20,9 @@ const Login = () => {
     e.preventDefault();
     try {
       const user = await login(form);
+     console.log("Logged in user:", user);
       alert("Login successful!");
-      if (user.role === "admin") {
+      if (user.data.role === "admin") {
         navigate("/admin");
       } else {
         navigate("/user");

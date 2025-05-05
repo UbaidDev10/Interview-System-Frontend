@@ -1,9 +1,9 @@
 import React from 'react'
-import API from '../api/BaseService'
+import API from '../../api/BaseService'
 
 const useRegister = () => {
-    const register = async(formData) =>{
-        const res = await API.post("/auth/register", formData);
+    const register = async(payload) =>{
+        const res = await API.post("/auth/register", payload);
         localStorage.setItem("token",res.data.token);
         return res.data;
     }

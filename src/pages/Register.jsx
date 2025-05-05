@@ -1,10 +1,13 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import register from "../hooks/useRegister"
 import API from "../api/BaseService"
+import useRegister from "../hooks/admin/useRegister"
+import useUploadResume from "../hooks/admin/useUploadResume"
 
 const Register = () => {
   const navigate = useNavigate();
+  const { register } = useRegister();
+  const { uploadResume } = useUploadResume(); 
 
   const [form, setForm] = useState({
     username: "",
@@ -25,32 +28,36 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("username", form.username);
-    formData.append("email", form.email);
-    formData.append("password", form.password);
-    formData.append("role", form.role);
-
-    if (form.role === "user") {
-      if (!resume) {
-        alert("Resume is required for user registration.");
-        return;
-      }
-      formData.append("resume", resume);
+  
+    if (form.role === "user" && !resume) {
+      alert("Resume is required for user registration.");
+      return;
     }
-    
-
+  
+    const payload = {
+      username: form.username,
+      email: form.email,
+      password: form.password,
+      role: form.role
+    };
+  
     try {
-      const res = await API.post("/auth/register", formData);
-
+      const user = await register(payload);
       alert("Registered successfully!");
+  
+      if (form.role === "user") {
+        await uploadResume(resume);
+        alert("Resume uploaded!");
+      }
+  
       navigate("/login");
     } catch (err) {
-      console.log(err);
+      console.error("Registration failed:", err);
+      alert(err.response?.data?.message || "Registration error");
     }
   };
-
+  
+  
   return (
     <div className="min-h-screen bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center px-4">
       <form

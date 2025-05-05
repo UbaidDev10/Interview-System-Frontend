@@ -1,6 +1,6 @@
 import React from 'react'
 import { useState } from "react"
-import useCreateJob from '../hooks/useCreateJob';
+import useCreateJob from '../../hooks/admin/useCreateJob';
 
 const CreateJob = () => {
     const { createJob } = useCreateJob();

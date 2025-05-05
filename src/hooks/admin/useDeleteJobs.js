@@ -1,5 +1,5 @@
 import React from 'react'
-import API from '../api/BaseService'
+import API from '../../api/BaseService'
 
 const useDeleteJobs = () => {
     const deleteJob = async (jobId) => {

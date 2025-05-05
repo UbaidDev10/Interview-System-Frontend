@@ -1,5 +1,5 @@
 import React from 'react'
-import API from '../api/BaseService'
+import API from '../../api/BaseService'
 
 const useUpdateJobs = () => {
     const updateJob = async (jobId, formData) => {
