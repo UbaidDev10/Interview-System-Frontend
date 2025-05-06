@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import AdminPanel from "./pages/admin/AdminPanel";
 import Homepage from "./pages/user/Homepage";
 import InterviewsPage from "./pages/user/InterviewPage";
+import InterviewDetail from "./components/user/InterviewDetail";
 // import Profile from "./pages/Profile"; 
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/user" element={<Homepage />} />
         <Route path="/interviews" element={<InterviewsPage />} />
+        <Route path="/interview/:id" element={<InterviewDetail />} />
         {/* <Route path="/profile" element={<Profile />} /> */}
       </Routes>
     </Router>
