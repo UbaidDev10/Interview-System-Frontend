@@ -4,6 +4,7 @@ export default function useGeminiChat() {
   const [messages, setMessages] = useState([]);
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isWaitingForUserResponse, setIsWaitingForUserResponse] = useState(false); // ✅ Add this
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:3001');
@@ -39,7 +40,7 @@ export default function useGeminiChat() {
     };
   }, []);
 
-  const sendMessage = useCallback((text) => {
+  const sendMessage = useCallback((text, isFollowUp = false) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
       // Add user message to state immediately
       setMessages(prev => [...prev, { sender: 'user', text }]);
@@ -60,6 +61,8 @@ export default function useGeminiChat() {
     messages,
     sendMessage,
     startInterview,
-    isConnected
+    isConnected,
+    isWaitingForUserResponse,           // ✅ Return it
+    setIsWaitingForUserResponse         // ✅ Return the setter
   };
 }
