@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
-const ASSEMBLYAI_API_KEY = 'd87af90a62634274868181364dbfbaec';
+const ASSEMBLYAI_API_KEY = 'b2d9ae6472ad4f6282fa51a6b0ddc0b5';
 
 export default function useAssemblyAI() {
   const [isListening, setIsListening] = useState(false);

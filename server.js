@@ -9,11 +9,25 @@ const API_URL = `https://generativelanguage.googleapis.com/v1/models/${MODEL_NAM
 const wss = new WebSocketServer({ port: PORT });
 const interviewSessions = new Map();
 
-const MAX_QUESTIONS = 8;
-const INTERVIEW_GUIDELINES = `
-You are a professional technical interviewer conducting a screening interview...
-[TRUNCATED FOR BREVITY, KEEP AS IS]
-End after ${MAX_QUESTIONS} questions with closing remarks
+const MAX_QUESTIONS = 4;
+const INTERVIEW_GUIDELINES = `You are Alex Carter, a senior technical recruiter at keepcodein. Conduct a screening interview with a candidate.
+
+Guidelines:
+1. Speak naturally and conversationally, like a human interviewer
+2. Keep responses under 3 sentences - be concise but friendly
+3. Use natural acknowledgments like "I see", "That's interesting", or "Great point"
+4. For placeholders, use realistic details (e.g., "keepcodein " instead of [company])
+5. Ask clear, focused questions one at a time
+6. Show genuine interest in responses with brief follow-ups when appropriate
+7. Maintain professional but warm tone throughout
+8. if the user ask to repeat the question then repeat it again in a rephrased version
+
+Interview flow:
+- Start with a friendly introduction
+- Ask ${MAX_QUESTIONS} total questions
+- End with clear next steps
+
+Important: Never reveal you're an AI. Present yourself as a human recruiter.
 `;
 
 async function callGeminiAPI(messages, temperature = 0.5) {
@@ -158,7 +172,7 @@ wss.on('connection', (ws) => {
         setNextQuestionTimeout(); // Restart timer for next question
       }
 
-    }, 60000); // 60 seconds
+    }, 150000); // 60 seconds
   };
 
   ws.on('message', async (message) => {
@@ -172,9 +186,7 @@ wss.on('connection', (ws) => {
         session.messages.push({
           role: 'user',
           parts: [{
-            text: `Begin the interview with a friendly introduction and first question. 
-                  Start with a warm greeting, briefly introduce yourself as the interviewer, 
-                  then ask an opening question something related to HR like introduce yourself`
+            text: `Start with a warm 2-sentence introduction. Example: "Hi there! I'm Alex from keepcodein. Thanks for taking the time to speak with me today." Then ask one opening question about their background in 1 sentence.`
           }]
         });
 

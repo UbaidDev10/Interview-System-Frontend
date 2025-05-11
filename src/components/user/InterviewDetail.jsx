@@ -24,15 +24,36 @@ export default function InterviewChat() {
   const prevMessageCount = useRef(messages.length);
   const recordingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const audioQueueRef = useRef([]); // Queue for audio messages
+  const isProcessingQueueRef = useRef(false); // Flag to track if queue is being processed
 
   const handleSpeechEnd = () => {
     setIsSpeaking(false);
+    isProcessingQueueRef.current = false;
+    processAudioQueue(); // Check if there are more items in queue
     startRecording(); // Start recording when AI finishes speaking
   };
 
   const { speakText } = useHumeTTS(handleSpeechEnd);
 
-  // Speak last AI message
+  // Process the audio queue
+  const processAudioQueue = () => {
+    if (isProcessingQueueRef.current || audioQueueRef.current.length === 0) return;
+
+    const nextAudio = audioQueueRef.current.shift();
+    if (nextAudio) {
+      isProcessingQueueRef.current = true;
+      setIsSpeaking(true);
+      speakText(nextAudio.text).catch((error) => {
+        console.error('Failed to speak text:', error);
+        setIsSpeaking(false);
+        isProcessingQueueRef.current = false;
+        processAudioQueue(); // Continue with next item even if current fails
+      });
+    }
+  };
+
+  // Speak AI messages, adding to queue if needed
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
 
@@ -41,15 +62,17 @@ export default function InterviewChat() {
       lastMessage &&
       lastMessage.sender === 'ai'
     ) {
-      setIsSpeaking(true);
-      speakText(lastMessage.text).catch((error) => {
-        console.error('Failed to speak text:', error);
-        setIsSpeaking(false);
-      });
+      // Add to queue instead of speaking immediately
+      audioQueueRef.current.push(lastMessage);
+      
+      // If not currently speaking and queue was empty, process immediately
+      if (!isProcessingQueueRef.current && audioQueueRef.current.length === 1) {
+        processAudioQueue();
+      }
     }
 
     prevMessageCount.current = messages.length;
-  }, [messages, speakText]);
+  }, [messages]);
 
   // Handle transcript changes
   useEffect(() => {
@@ -72,12 +95,14 @@ export default function InterviewChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Cleanup timeout on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (recordingTimeoutRef.current) {
         clearTimeout(recordingTimeoutRef.current);
       }
+      // Clear the audio queue
+      audioQueueRef.current = [];
     };
   }, []);
 
