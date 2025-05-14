@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 import AdminPanel from "./pages/admin/AdminPanel";
 import Homepage from "./pages/user/Homepage";
 import InterviewsPage from "./pages/user/InterviewPage";
-import InterviewDetail from "./components/user/InterviewDetail";
+import InterviewDetail from "./components/user/InterviewChat/InterviewDetail";
 // import Profile from "./pages/Profile"; 
 
 function App() {

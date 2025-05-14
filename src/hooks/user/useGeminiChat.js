@@ -4,7 +4,8 @@ export default function useGeminiChat() {
   const [messages, setMessages] = useState([]);
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [isWaitingForUserResponse, setIsWaitingForUserResponse] = useState(false); // ✅ Add this
+  const [isInterviewEnded, setIsInterviewEnded] = useState(false);
+  const [isWaitingForUserResponse, setIsWaitingForUserResponse] = useState(false);
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:3001');
@@ -18,7 +19,22 @@ export default function useGeminiChat() {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.type === 'response') {
-        setMessages(prev => [...prev, { sender: 'ai', text: data.text }]);
+        const newMessage = { 
+          sender: 'ai', 
+          text: data.text,
+          ...(data.isConclusion ? { isConclusion: true } : {})
+        };
+        setMessages(prev => [...prev, newMessage]);
+        
+        if (data.isConclusion) {
+          setIsInterviewEnded(true);
+          // Close the socket after a short delay to allow final message to be processed
+          setTimeout(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.close();
+            }
+          }, 1000);
+        }
       }
     };
 
@@ -26,11 +42,13 @@ export default function useGeminiChat() {
       console.log('WebSocket disconnected');
       setIsConnected(false);
       setSocket(null);
+      setIsInterviewEnded(true); // Mark interview as ended on disconnect
     };
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
       setIsConnected(false);
+      setIsInterviewEnded(true);
     };
 
     return () => {
@@ -41,28 +59,38 @@ export default function useGeminiChat() {
   }, []);
 
   const sendMessage = useCallback((text, isFollowUp = false) => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      // Add user message to state immediately
+    if (socket && socket.readyState === WebSocket.OPEN && !isInterviewEnded) {
       setMessages(prev => [...prev, { sender: 'user', text }]);
       socket.send(JSON.stringify({
         type: 'message',
         text
       }));
     }
-  }, [socket]);
+  }, [socket, isInterviewEnded]);
 
   const startInterview = useCallback(() => {
     if (socket && socket.readyState === WebSocket.OPEN) {
+      setIsInterviewEnded(false); // Reset interview state when starting new one
       socket.send(JSON.stringify({ type: 'start_interview' }));
     }
   }, [socket]);
+
+  const askFollowUp = useCallback((messages) => {
+    if (socket && socket.readyState === WebSocket.OPEN && !isInterviewEnded) {
+      setIsWaitingForUserResponse(true);
+      // You can implement follow-up logic here if needed
+    }
+  }, [socket, isInterviewEnded]);
 
   return {
     messages,
     sendMessage,
     startInterview,
     isConnected,
-    isWaitingForUserResponse,           // ✅ Return it
-    setIsWaitingForUserResponse         // ✅ Return the setter
+    isInterviewEnded,
+    isWaitingForUserResponse,
+    setIsWaitingForUserResponse,
+    askFollowUp,
+    socket
   };
 }

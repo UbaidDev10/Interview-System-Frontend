@@ -9,7 +9,7 @@ const API_URL = `https://generativelanguage.googleapis.com/v1/models/${MODEL_NAM
 const wss = new WebSocketServer({ port: PORT });
 const interviewSessions = new Map();
 
-const MAX_QUESTIONS = 4;
+const MAX_QUESTIONS = 1;
 const INTERVIEW_GUIDELINES = `You are Alex Carter, a senior technical recruiter at keepcodein. Conduct a screening interview with a candidate.
 
 Guidelines:
@@ -172,7 +172,7 @@ wss.on('connection', (ws) => {
         setNextQuestionTimeout(); // Restart timer for next question
       }
 
-    }, 150000); // 60 seconds
+    }, 50000); // 60 seconds
   };
 
   ws.on('message', async (message) => {
@@ -251,7 +251,9 @@ wss.on('connection', (ws) => {
           }));
 
           session.isInterviewActive = false;
-          return;
+           setTimeout(() => ws.close(), 100);
+        } else {
+          setNextQuestionTimeout(); // Restart timer for next question
         }
 
         let nextPrompt;
