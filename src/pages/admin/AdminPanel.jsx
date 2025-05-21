@@ -91,9 +91,6 @@ const AdminPanel = () => {
                 <h2 className="font-bold text-lg dark:text-white text-gray-900">
                   {username}
                 </h2>
-                <p className="text-xs text-green-500 bg-green-100 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded-full">
-                  Admin
-                </p>
               </>
             )}
           </div>

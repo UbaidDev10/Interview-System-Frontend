@@ -11,7 +11,9 @@ const useGetJobs = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
+            console.log("Jobs fetched successfully:", res.data);
             return res.data;
+            
         }catch(err){
             console.log("Error fetching jobs:", err.response?.data?.message || err.message);
             throw err;

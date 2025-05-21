@@ -7,8 +7,8 @@ const useUserProfile = () => {
 
     const fetchProfile = async () => {
         try {
-            const res = await API.get("/users/profile");
-            setProfile(res.data);
+            const res = await API.get("/user/profile");
+            setProfile(res.data.data);
         }
         catch(err){
             console.log("Failed to fetch profile:", err);
@@ -24,3 +24,5 @@ const useUserProfile = () => {
 
     return{profile, loading}
 }
+
+export default useUserProfile;
