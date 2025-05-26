@@ -3,15 +3,18 @@ import useUpdateJobs from "../../hooks/admin/useUpdateJobs";
 import useDeleteJobs from "../../hooks/admin/useDeleteJobs";
 import useGetJobs from "../../hooks/admin/useGetJobs";
 import useCreateJob from "../../hooks/admin/useCreateJob";
-import { FiEdit2, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiPlus, FiSearch, FiX, FiVideo } from "react-icons/fi";
 import { Dialog } from "@headlessui/react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const JobList = ({ darkMode }) => {
   const { getJobs } = useGetJobs();
   const { updateJob } = useUpdateJobs();
   const { deleteJob } = useDeleteJobs();
   const { createJob } = useCreateJob();
+
+  const navigate = useNavigate();
 
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
@@ -22,14 +25,15 @@ const JobList = ({ darkMode }) => {
     title: "",
     description: "",
     requirements: "",
-    status: "active",
+    skills: "",
   });
 
   const fetchJobs = async () => {
     try {
-      const data = await getJobs();
-      setJobs(data.jobs);
-      setFilteredJobs(data.jobs);
+      const response = await getJobs();
+      const jobsData = response?.data?.jobs || [];
+      setJobs(jobsData);
+      setFilteredJobs(jobsData);
     } catch (err) {
       console.error("Error fetching jobs:", err);
     }
@@ -44,7 +48,9 @@ const JobList = ({ darkMode }) => {
       (job) =>
         job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.requirements.toLowerCase().includes(searchTerm.toLowerCase())
+        job.requirements.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (Array.isArray(job.skills) &&
+          job.skills.join(" ").toLowerCase().includes(searchTerm.toLowerCase()))
     );
     setFilteredJobs(results);
   }, [searchTerm, jobs]);
@@ -55,7 +61,7 @@ const JobList = ({ darkMode }) => {
       title: "",
       description: "",
       requirements: "",
-      status: "active",
+      skills: "",
     });
     setIsModalOpen(true);
   };
@@ -66,7 +72,7 @@ const JobList = ({ darkMode }) => {
       title: job.title,
       description: job.description,
       requirements: job.requirements,
-      status: job.status || "active",
+      skills: job.skills.join(", "),
     });
     setIsModalOpen(true);
   };
@@ -78,14 +84,27 @@ const JobList = ({ darkMode }) => {
     }
   };
 
+  const handleViewInterviews = (jobId) => {
+    navigate(`/admin/interviews/${jobId}`);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const formattedJob = {
+        ...formData,
+        skills: formData.skills
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s !== ""),
+      };
+
       if (editingJobId) {
-        await updateJob(editingJobId, formData);
+        await updateJob(editingJobId, formattedJob);
       } else {
-        await createJob(formData);
+        await createJob(formattedJob);
       }
+
       fetchJobs();
       setIsModalOpen(false);
     } catch (error) {
@@ -96,12 +115,6 @@ const JobList = ({ darkMode }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const toggleJobStatus = async (job) => {
-    const newStatus = job.status === "active" ? "inactive" : "active";
-    await updateJob(job.id, { ...job, status: newStatus });
-    fetchJobs();
   };
 
   return (
@@ -170,16 +183,6 @@ const JobList = ({ darkMode }) => {
                     <h3 className="text-lg font-semibold dark:text-white">
                       {job.title}
                     </h3>
-                    <button
-                      onClick={() => toggleJobStatus(job)}
-                      className={`text-xs font-medium px-2 py-1 rounded-full ${
-                        job.status === "active"
-                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200"
-                      }`}
-                    >
-                      {job.status === "active" ? "Active" : "Inactive"}
-                    </button>
                   </div>
 
                   <p
@@ -187,28 +190,40 @@ const JobList = ({ darkMode }) => {
                       darkMode ? "dark:text-gray-300" : "text-gray-600"
                     }`}
                   >
-                    {job.description.length > 100
-                      ? `${job.description}`
-                      : job.description}
+                    {job.description}
                   </p>
 
                   <div className="mb-4">
                     <p className="text-xs font-medium mb-2 dark:text-gray-300">
                       Requirements:
                     </p>
+                    <p
+                      className={`text-sm ${
+                        darkMode ? "text-gray-200" : "text-gray-700"
+                      }`}
+                    >
+                      {job.requirements}
+                    </p>
+                  </div>
+
+                  <div className="mb-4">
+                    <p className="text-xs font-medium mb-2 dark:text-white font-bold">
+                      Skills:
+                    </p>
                     <div className="flex flex-wrap gap-2">
-                      {job.requirements.split(",").map((req, i) => (
-                        <span
-                          key={i}
-                          className={`text-xs px-2 py-1 rounded-full ${
-                            darkMode
-                              ? "dark:bg-gray-600 dark:text-gray-200"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {req.trim()}
-                        </span>
-                      ))}
+                      {Array.isArray(job.skills) &&
+                        job.skills.map((skill, i) => (
+                          <span
+                            key={i}
+                            className={`text-xs px-2 py-1 rounded-full ${
+                              darkMode
+                                ? "dark:bg-purple-700 dark:text-purple-100"
+                                : "bg-purple-100 text-purple-800"
+                            }`}
+                          >
+                            {skill.trim()}
+                          </span>
+                        ))}
                     </div>
                   </div>
 
@@ -219,11 +234,19 @@ const JobList = ({ darkMode }) => {
                     >
                       <FiEdit2 size={14} /> Edit
                     </button>
+
                     <button
                       onClick={() => handleDelete(job.id)}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/50 dark:hover:bg-red-900 dark:text-red-300 transition text-sm"
                     >
                       <FiTrash2 size={14} /> Delete
+                    </button>
+
+                    <button
+                      onClick={() => handleViewInterviews(job.id)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/50 dark:hover:bg-blue-900 dark:text-blue-300 transition text-sm"
+                    >
+                      <FiVideo size={14} /> Interviews
                     </button>
                   </div>
                 </div>
@@ -233,17 +256,13 @@ const JobList = ({ darkMode }) => {
         )}
       </div>
 
-      {/* Job Modal */}
+      {/* Modal remains unchanged */}
       <Dialog
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         className="relative z-50"
       >
-        <div
-          className="fixed inset-0 bg-black/30 backdrop-blur-sm"
-          aria-hidden="true"
-        />
-
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel
             className={`w-full max-w-2xl rounded-xl p-6 ${
@@ -263,81 +282,53 @@ const JobList = ({ darkMode }) => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1 dark:text-gray-300">
-                  Job Title
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="e.g. Frontend Developer"
-                  className={`w-full px-4 py-2 rounded-lg border ${
-                    darkMode
-                      ? "dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                      : "bg-white border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                  required
-                />
-              </div>
+              <label className="block text-sm font-medium mb-1 dark:text-gray-300">
+                Title:
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                required
+              />
 
-              <div>
-                <label className="block text-sm font-medium mb-1 dark:text-gray-300">
-                  Description
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Detailed job description..."
-                  rows={4}
-                  className={`w-full px-4 py-2 rounded-lg border ${
-                    darkMode
-                      ? "dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                      : "bg-white border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                  required
-                />
-              </div>
+              <label className="block text-sm font-medium mb-1 dark:text-gray-300">
+                Description:
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                rows={4}
+                className="w-full px-4 py-2 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                required
+              />
 
-              <div>
-                <label className="block text-sm font-medium mb-1 dark:text-gray-300">
-                  Requirements (comma separated)
-                </label>
-                <textarea
-                  name="requirements"
-                  value={formData.requirements}
-                  onChange={handleInputChange}
-                  placeholder="React, JavaScript, CSS, etc."
-                  rows={2}
-                  className={`w-full px-4 py-2 rounded-lg border ${
-                    darkMode
-                      ? "dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                      : "bg-white border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                  required
-                />
-              </div>
+              <label className="block text-sm font-medium mb-1 dark:text-white font-bold">
+                Requirements:
+              </label>
+              <textarea
+                name="requirements"
+                value={formData.requirements}
+                onChange={handleInputChange}
+                rows={2}
+                className="w-full px-4 py-2 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                required
+              />
 
-              <div>
-                <label className="block text-sm font-medium mb-1 dark:text-gray-300">
-                  Status
-                </label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-2 rounded-lg border ${
-                    darkMode
-                      ? "dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                      : "bg-white border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
+              <label className="block text-sm font-medium mb-1 dark:text-gray-300">
+                Skills Required:
+              </label>
+              <input
+                type="text"
+                name="skills"
+                value={formData.skills}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                required
+              />
 
               <div className="flex justify-end gap-3 pt-2">
                 <button
