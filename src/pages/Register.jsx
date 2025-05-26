@@ -47,9 +47,10 @@ const Register = () => {
       };
 
       await register(payload);
+      const token = localStorage.getItem("token");
 
       if (values.role === "user") {
-        await uploadResume(resume);
+        await uploadResume(resume, token);
         alert("Resume uploaded!");
       }
 

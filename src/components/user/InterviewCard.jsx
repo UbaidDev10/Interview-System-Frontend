@@ -5,7 +5,7 @@ const InterviewCard = ({ interview }) => {
   const interviewDate = new Date(interview.interviewDate);
   const now = new Date();
 
-  const hasExpired = now > interviewDate;
+  const hasExpired = now > interviewDate;  
 
   return (
     <div className="bg-white shadow overflow-hidden rounded-lg transition-all hover:shadow-md">
@@ -14,6 +14,7 @@ const InterviewCard = ({ interview }) => {
           <h3 className="text-lg font-bold text-gray-800">{interview.title}</h3>
           <p className="text-sm text-gray-500 mb-2">{interview.description}</p>
         </div>
+   
 
         {interview.status === "accepted" && (
           <div className="mt-4 space-y-2 text-sm text-gray-700">
