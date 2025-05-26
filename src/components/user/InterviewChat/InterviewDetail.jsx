@@ -136,7 +136,7 @@ export default function InterviewChat() {
   const handleStartInterview = () => {
     if (isConnected && !isInterviewEnded) {
       startInterview();
-      startVideoRecording(); // Start video recording
+      startVideoRecording();
     }
   };
 
@@ -154,21 +154,32 @@ export default function InterviewChat() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <div className="w-1/2 p-6 flex flex-col">
-        <div className="bg-white rounded-xl shadow-md p-6 flex-1 flex flex-col">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">AI Interview Session</h1>
+    <div className="flex flex-col lg:flex-row h-screen bg-gray-50">
+      {/* Left Panel - Controls */}
+      <div className="w-full lg:w-1/2 p-4 lg:p-6 flex flex-col">
+        <div className="bg-white rounded-xl shadow-sm p-6 flex-1 flex flex-col border border-gray-100">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">AI Interview Session</h1>
+            <div className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-medium">
+              {isConnected ? 'Live' : 'Connecting...'}
+            </div>
+          </div>
 
-          {/* Video Preview (Optional) */}
+          {/* Video Preview */}
           {previewStream && (
-            <video
-              ref={(video) => {
-                if (video) video.srcObject = previewStream;
-              }}
-              autoPlay
-              muted
-              className="rounded-lg w-full mb-4 h-64 object-cover border border-gray-300"
-            />
+            <div className="relative rounded-lg w-full mb-6 h-48 lg:h-64 bg-gray-100 overflow-hidden border border-gray-200">
+              <video
+                ref={(video) => {
+                  if (video) video.srcObject = previewStream;
+                }}
+                autoPlay
+                muted
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                Recording
+              </div>
+            </div>
           )}
 
           <StatusIndicators
@@ -177,11 +188,13 @@ export default function InterviewChat() {
             isSpeaking={isSpeaking}
             isInterviewEnded={isInterviewEnded}
           />
+
           <VoiceVisualization
             isListening={isListening}
             isSpeaking={isSpeaking}
             isInterviewEnded={isInterviewEnded}
           />
+
           <InterviewControls
             messages={messages}
             isConnected={isConnected}
@@ -194,6 +207,7 @@ export default function InterviewChat() {
         </div>
       </div>
 
+      {/* Right Panel - Transcript */}
       <TranscriptPanel
         messages={messages}
         isSpeaking={isSpeaking}

@@ -28,7 +28,6 @@ export default function useGeminiChat() {
         
         if (data.isConclusion) {
           setIsInterviewEnded(true);
-          // Close the socket after a short delay to allow final message to be processed
           setTimeout(() => {
             if (ws.readyState === WebSocket.OPEN) {
               ws.close();
@@ -78,7 +77,6 @@ export default function useGeminiChat() {
   const askFollowUp = useCallback((messages) => {
     if (socket && socket.readyState === WebSocket.OPEN && !isInterviewEnded) {
       setIsWaitingForUserResponse(true);
-      // You can implement follow-up logic here if needed
     }
   }, [socket, isInterviewEnded]);
 
