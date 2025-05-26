@@ -1,9 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-
-import path from 'path' // ← this line is missing in your file
-
 import path from 'path'
 
 
@@ -21,12 +18,7 @@ export default defineConfig({
     },
   },
 },)
-=======
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  
-},)
+
 
 
 
