@@ -8,6 +8,10 @@ const InterviewsPage = () => {
   const { getInterviews } = useInterviews();
   const [interviews, setInterviews] = useState([]);
 
+  const sortedInterviews = interviews.sort((a, b) => {
+    return new Date(b.interviewDate) - new Date(a.interviewDate);
+  });
+
   useEffect(() => {
     const loadInterviews = async () => {
       try {
@@ -48,7 +52,7 @@ const InterviewsPage = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {interviews.map((interview) => (
+              {sortedInterviews.map((interview) => (
                 <InterviewCard key={interview.id} interview={interview} />
               ))}
             </div>
