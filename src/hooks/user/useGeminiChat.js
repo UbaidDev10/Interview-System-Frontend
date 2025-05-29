@@ -1,19 +1,27 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export default function useGeminiChat() {
+export default function useGeminiChat(userId) {
   const [messages, setMessages] = useState([]);
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isInterviewEnded, setIsInterviewEnded] = useState(false);
   const [isWaitingForUserResponse, setIsWaitingForUserResponse] = useState(false);
 
+  console.log("userId--->", userId)
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:3001');
+    const ws = new WebSocket('ws://localhost:3000');
     
     ws.onopen = () => {
       console.log('WebSocket connected');
       setSocket(ws);
       setIsConnected(true);
+
+      if (userId) {
+        ws.send(JSON.stringify({
+          type: 'user_info',
+          userId
+        }));
+      }
     };
 
     ws.onmessage = (event) => {

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom'; // Add this import
 import useGeminiChat from '../../../hooks/user/useGeminiChat';
 import useHumeTTS from '../../../hooks/user/useHumeTTS';
 import useAssemblyAI from '../../../hooks/user/useAssemblyAI';
@@ -11,6 +12,10 @@ import InterviewControls from './InterviewControls';
 import TranscriptPanel from './TranscriptPanel';
 
 export default function InterviewChat() {
+
+  const { id } = useParams()
+  console.log("userId", id)
+
   const {
     messages,
     sendMessage,
@@ -21,7 +26,7 @@ export default function InterviewChat() {
     socket,
     isWaitingForUserResponse,
     setIsWaitingForUserResponse
-  } = useGeminiChat();
+  } = useGeminiChat(id);
 
   const {
     isListening,
