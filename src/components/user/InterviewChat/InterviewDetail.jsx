@@ -1,20 +1,33 @@
-import { useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom'; // Add this import
-import useGeminiChat from '../../../hooks/user/useGeminiChat';
-import useHumeTTS from '../../../hooks/user/useHumeTTS';
-import useAssemblyAI from '../../../hooks/user/useAssemblyAI';
-import useAudioQueue from '../../../hooks/user/useAudioQueue';
-import useVideoRecorder from '../../../hooks/user/useVideoRecording';
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import useGeminiChat from "../../../hooks/user/useGeminiChat";
+import useHumeTTS from "../../../hooks/user/useHumeTTS";
+import useAssemblyAI from "../../../hooks/user/useAssemblyAI";
+import useAudioQueue from "../../../hooks/user/useAudioQueue";
+import useVideoRecorder from "../../../hooks/user/useVideoRecording";
 
-import StatusIndicators from './StatusIndicators';
-import VoiceVisualization from './VoiceVisualization';
-import InterviewControls from './InterviewControls';
-import TranscriptPanel from './TranscriptPanel';
+import StatusIndicators from "./StatusIndicators";
+import VoiceVisualization from "./VoiceVisualization";
+import InterviewControls from "./InterviewControls";
+import TranscriptPanel from "./TranscriptPanel";
+
+import useVideoUpload from "../../../hooks/user/useVideoUpload";
+import useConversationUpload from "../../../hooks/user/useConversationUpload";
 
 export default function InterviewChat() {
+  const { userId, interviewId } = useParams();
+  console.log("userId", userId);
 
-  const { id } = useParams()
-  console.log("userId", id)
+  const [hasStarted, setHasStarted] = useState(false);
+
+  const {
+    startRecording: startVideoRecording,
+    stopRecording: stopVideoRecording,
+    mediaBlobUrl,
+    previewStream,
+    status: videoStatus,
+    downloadRecording
+  } = useVideoRecorder();
 
   const {
     messages,
@@ -25,8 +38,8 @@ export default function InterviewChat() {
     askFollowUp,
     socket,
     isWaitingForUserResponse,
-    setIsWaitingForUserResponse
-  } = useGeminiChat(id);
+    setIsWaitingForUserResponse,
+  } = useGeminiChat(userId, interviewId);
 
   const {
     isListening,
@@ -36,30 +49,17 @@ export default function InterviewChat() {
     setTranscript,
   } = useAssemblyAI();
 
-  const {
+  const { speakText, onSpeechEnd } = useHumeTTS();
+
+  const { addToQueue, clearQueue, isSpeaking } = useAudioQueue(
     speakText,
-    onSpeechEnd
-  } = useHumeTTS();
-
-  const {
-    addToQueue,
-    clearQueue,
-    isSpeaking
-  } = useAudioQueue(speakText, () => {
-    if (!isListening && !followUpTriggered.current && !isInterviewEnded) {
-      startRecording();
+    () => {
+      if (!isListening && !followUpTriggered.current && !isInterviewEnded) {
+        startRecording();
+      }
+      if (onSpeechEnd) onSpeechEnd();
     }
-    if (onSpeechEnd) onSpeechEnd();
-  });
-
-  const {
-    startRecording: startVideoRecording,
-    stopRecording: stopVideoRecording,
-    downloadRecording,
-    mediaBlobUrl,
-    previewStream,
-    status: videoStatus
-  } = useVideoRecorder();
+  );
 
   const prevMessageCount = useRef(messages.length);
   const recordingTimeoutRef = useRef(null);
@@ -82,7 +82,57 @@ export default function InterviewChat() {
         downloadRecording();
       }, 1000);
     }
-  }, [isInterviewEnded, stopRecording, clearQueue, stopVideoRecording, downloadRecording]);
+  }, [isInterviewEnded, stopRecording, clearQueue, stopVideoRecording]);
+
+  const {
+    uploadVideo,
+    isUploading: isVideoUploading,
+    error: videoError,
+  } = useVideoUpload();
+
+  const {
+    uploadConversation,
+    isUploading: isConversationUploading,
+    error: conversationError,
+  } = useConversationUpload();
+
+  const hasAttemptedUpload = useRef(false);
+
+  useEffect(() => {
+    if (
+      isInterviewEnded &&
+      mediaBlobUrl &&
+      !hasAttemptedUpload.current
+    ) {
+      hasAttemptedUpload.current = true;
+
+      const uploadInterviewData = async () => {
+        try {
+          // Upload video
+          const response = await fetch(mediaBlobUrl);
+          const blob = await response.blob();
+          await uploadVideo(id, blob);
+
+          // Upload conversation
+          await uploadConversation(id, messages);
+
+          console.log("Interview data uploaded successfully");
+        } catch (error) {
+          console.error("Error uploading interview data:", error);
+        }
+      };
+
+      uploadInterviewData();
+    }
+  }, [
+    isInterviewEnded,
+    mediaBlobUrl,
+    messages,
+    userId,
+    uploadVideo,
+    uploadConversation,
+    
+  ]);
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -92,7 +142,10 @@ export default function InterviewChat() {
 
     const lastMessage = messages[messages.length - 1];
 
-    if (messages.length > prevMessageCount.current && lastMessage?.sender === 'ai') {
+    if (
+      messages.length > prevMessageCount.current &&
+      lastMessage?.sender === "ai"
+    ) {
       addToQueue(lastMessage);
       followUpTriggered.current = false;
 
@@ -114,7 +167,8 @@ export default function InterviewChat() {
       recordingTimeoutRef.current = setTimeout(() => {
         stopRecording();
         sendMessage(transcript);
-        setTranscript('');
+        setTranscript("");
+
         setTimeout(() => {
           if (messages.length > 0 && !isInterviewEnded) {
             followUpTriggered.current = true;
@@ -123,10 +177,18 @@ export default function InterviewChat() {
         }, 1000);
       }, 2000);
     }
-  }, [transcript, sendMessage, setTranscript, stopRecording, messages, askFollowUp, isInterviewEnded]);
+  }, [
+    transcript,
+    sendMessage,
+    setTranscript,
+    stopRecording,
+    messages,
+    askFollowUp,
+    isInterviewEnded,
+  ]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
@@ -139,7 +201,8 @@ export default function InterviewChat() {
   }, [clearQueue]);
 
   const handleStartInterview = () => {
-    if (isConnected && !isInterviewEnded) {
+    if (isConnected && !isInterviewEnded && !hasStarted) {
+      setHasStarted(true);
       startInterview();
       startVideoRecording();
     }
@@ -147,11 +210,12 @@ export default function InterviewChat() {
 
   const handleRecordButtonClick = () => {
     if (isInterviewEnded) return;
+
     if (isListening) {
       stopRecording();
       if (transcript) {
         sendMessage(transcript);
-        setTranscript('');
+        setTranscript("");
       }
     } else {
       startRecording();
@@ -164,9 +228,11 @@ export default function InterviewChat() {
       <div className="w-full lg:w-1/2 p-4 lg:p-6 flex flex-col">
         <div className="bg-white rounded-xl shadow-sm p-6 flex-1 flex flex-col border border-gray-100">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">AI Interview Session</h1>
+            <h1 className="text-2xl font-bold text-gray-800">
+              AI Interview Session
+            </h1>
             <div className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-medium">
-              {isConnected ? 'Live' : 'Connecting...'}
+              {isConnected ? "Live" : "Connecting..."}
             </div>
           </div>
 
@@ -192,6 +258,7 @@ export default function InterviewChat() {
             isListening={isListening}
             isSpeaking={isSpeaking}
             isInterviewEnded={isInterviewEnded}
+            isUploading={isVideoUploading || isConversationUploading}
           />
 
           <VoiceVisualization
@@ -208,6 +275,7 @@ export default function InterviewChat() {
             isSpeaking={isSpeaking}
             handleStartInterview={handleStartInterview}
             handleRecordButtonClick={handleRecordButtonClick}
+            hasStarted={hasStarted}
           />
         </div>
       </div>

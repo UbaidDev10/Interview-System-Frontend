@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 
-const ScheduleInterviewModal = ({ isOpen, onClose, onSubmit, userId, applicationId }) => {
+const ScheduleInterviewModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  userId,
+  applicationId,
+  isUpdating,
+}) => {
   const [interviewDate, setInterviewDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -25,7 +32,6 @@ const ScheduleInterviewModal = ({ isOpen, onClose, onSubmit, userId, application
       application_id: applicationId,
     });
   };
-  
 
   if (!isOpen) return null;
 
@@ -83,15 +89,19 @@ const ScheduleInterviewModal = ({ isOpen, onClose, onSubmit, userId, application
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-300 dark:bg-gray-700 dark:text-white text-gray-800 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600"
+              disabled={isUpdating}
+              className="px-4 py-2 bg-gray-300 dark:bg-gray-700 dark:text-white text-gray-800 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md shadow-sm"
+              disabled={isUpdating}
+              className={`px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md shadow-sm ${
+                isUpdating ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Schedule
+              {isUpdating ? 'Scheduling...' : 'Schedule'}
             </button>
           </div>
         </form>

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const HUME_API_KEY = 'MocNCntT7RUHFpXQ4XzAOhkGOl8DDoVMFAySUvyJUsWPHtfL';
+const HUME_API_KEY = 'TWLzwhSLOBm325HAViu4hEmxapYdEG5XD9AlGH30O5NzIGq8';
 
 export default function useHumeTTS(onSpeechEnd) {
   const audioContextRef = useRef(null);

@@ -8,7 +8,8 @@ const useLogin = () => {
         localStorage.setItem("logintimestamp", Date.now());
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify({
-          username: res.data.data.username
+          username: res.data.data.username,
+          userId: res.data.data.user_id,
       }));
         return res.data;
     }

@@ -5,16 +5,17 @@ export default function InterviewControls({
   isListening,
   isSpeaking,
   handleStartInterview,
-  handleRecordButtonClick
+  handleRecordButtonClick,
+  hasStarted,
 }) {
   return (
     <div className="mt-auto w-full">
       {messages.length === 0 ? (
         <button
           onClick={handleStartInterview}
-          disabled={!isConnected || isInterviewEnded}
+          disabled={!isConnected || isInterviewEnded || hasStarted}
           className={`w-full py-3.5 rounded-xl text-white font-medium transition-all duration-200 ${
-            isConnected && !isInterviewEnded
+            isConnected && !isInterviewEnded && !hasStarted
               ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 shadow-md hover:shadow-lg'
               : 'bg-gray-300 cursor-not-allowed'
           }`}

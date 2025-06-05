@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 const InterviewCard = ({ interview }) => {
   const interviewDate = new Date(interview.interviewDate);
   const now = new Date();
+  const user = JSON.parse(localStorage.getItem("user"));
+  const UserId = user?.userId
 
   const hasExpired = now > interviewDate;  
 
@@ -38,7 +40,7 @@ const InterviewCard = ({ interview }) => {
               </p>
             ) : (
               <Link
-                to={`/interview/${interview.id}`}
+                to={`/interview/${UserId}/${interview.id}`}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 transition-colors"
               >
                 Start Interview <FiChevronRight className="ml-2" />
