@@ -26,7 +26,7 @@ function App() {
         <Route path="/user" element={<Homepage />} />
         <Route path="/interviews" element={<InterviewsPage />} />
 
-        <Route path="/interview/:id" element={<InterviewDetail />} />
+        <Route path="/interview/:userId/:interviewId" element={<InterviewDetail />} />
 
         <Route path="/user/profile" element={<UserProfilePage />} />
         <Route path="/admin/interviews/:jobId" element={<JobInterviewsPage />} />

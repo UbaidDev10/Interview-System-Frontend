@@ -1,4 +1,10 @@
-export default function StatusIndicators({ isConnected, isListening, isSpeaking, isInterviewEnded }) {
+export default function StatusIndicators({ 
+  isConnected, 
+  isListening, 
+  isSpeaking, 
+  isInterviewEnded,
+  isUploading 
+}) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
       <div className={`flex items-center text-sm p-2.5 rounded-lg ${
@@ -27,6 +33,13 @@ export default function StatusIndicators({ isConnected, isListening, isSpeaking,
         <div className="flex items-center text-sm p-2.5 rounded-lg bg-red-50 text-red-700 col-span-full">
           <span className="w-2.5 h-2.5 rounded-full bg-red-500 mr-2.5 animate-pulse"></span>
           Interview Session Ended
+        </div>
+      )}
+
+      {isUploading && (
+        <div className="flex items-center text-sm p-2.5 rounded-lg bg-blue-50 text-blue-700 col-span-full">
+          <span className="w-2.5 h-2.5 rounded-full bg-blue-500 mr-2.5 animate-pulse"></span>
+          Uploading Interview Data...
         </div>
       )}
     </div>
