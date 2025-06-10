@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import useGeminiChat from "../../../hooks/user/useGeminiChat";
 import useHumeTTS from "../../../hooks/user/useHumeTTS";
 import useAssemblyAI from "../../../hooks/user/useAssemblyAI";
@@ -16,9 +16,12 @@ import useConversationUpload from "../../../hooks/user/useConversationUpload";
 
 export default function InterviewChat() {
   const { userId, interviewId } = useParams();
+  const navigate = useNavigate();
   console.log("userId", userId);
 
   const [hasStarted, setHasStarted] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [isUploadComplete, setIsUploadComplete] = useState(false);
 
   const {
     startRecording: startVideoRecording,
@@ -105,33 +108,42 @@ export default function InterviewChat() {
       !hasAttemptedUpload.current
     ) {
       hasAttemptedUpload.current = true;
+      setShowCompletionModal(true);
 
       const uploadInterviewData = async () => {
         try {
+          console.log("Starting interview data upload...");
+          
           // Upload video
           const response = await fetch(mediaBlobUrl);
           const blob = await response.blob();
-          await uploadVideo(id, blob);
+          console.log("Video blob created, size:", blob.size);
+          
+          await uploadVideo(interviewId, blob);
+          console.log("Video uploaded successfully");
 
           // Upload conversation
-          await uploadConversation(id, messages);
+          await uploadConversation(interviewId, messages);
+          console.log("Conversation uploaded successfully");
 
-          console.log("Interview data uploaded successfully");
+          console.log("All interview data uploaded successfully");
+          setIsUploadComplete(true);
         } catch (error) {
           console.error("Error uploading interview data:", error);
+          // You might want to show an error message to the user here
         }
       };
 
-      uploadInterviewData();
+      // Add a small delay to ensure video is fully processed
+      setTimeout(uploadInterviewData, 2000);
     }
   }, [
     isInterviewEnded,
     mediaBlobUrl,
     messages,
-    userId,
+    interviewId,
     uploadVideo,
     uploadConversation,
-    
   ]);
 
   useEffect(() => {
@@ -287,6 +299,59 @@ export default function InterviewChat() {
         isInterviewEnded={isInterviewEnded}
         messagesEndRef={messagesEndRef}
       />
+
+      {/* Interview Completion Modal */}
+      {showCompletionModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
+            {!isUploadComplete ? (
+              <>
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                  <h2 className="text-xl font-bold text-gray-800 dark:text-white text-center">
+                    Saving Interview Data
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-300 text-center">
+                    Please wait while we save your interview data...
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-green-600 dark:text-green-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-800 dark:text-white text-center">
+                    Interview Completed!
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-300 text-center">
+                    Thank you for completing the interview. We will get back to you through email.
+                  </p>
+                  <button
+                    onClick={() => navigate('/user')}
+                    className="mt-4 px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                  >
+                    Return to Home
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
