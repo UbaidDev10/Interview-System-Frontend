@@ -16,7 +16,7 @@ import DashboardStats from "../../components/admin/DashboardStats";
 
 const AdminPanel = () => {
   const [activePage, setActivePage] = useState("dashboard");
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
 

@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@headlessui/react": "^2.2.2",
+    "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
     "@humeai/voice": "^0.1.10",
     "@radix-ui/react-avatar": "^1.1.9",
     "@radix-ui/react-progress": "^1.1.6",

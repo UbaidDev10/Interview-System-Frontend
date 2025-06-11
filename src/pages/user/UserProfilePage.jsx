@@ -5,10 +5,13 @@ import useUserProfile from "../../hooks/admin/useUserProfile";
 import useUploadResume from "../../hooks/admin/useUploadResume";
 import API from "../../api/BaseService";
 import { FiUser } from "react-icons/fi";
+import Modal from "../../components/ui/Modal";
+import useModal from "../../hooks/useModal";
 
 const UserProfilePage = () => {
   const { profile, loading } = useUserProfile();
   const { uploadResume } = useUploadResume();
+  const { isOpen, modalContent, showModal, hideModal } = useModal();
 
   const [username, setUsername] = useState("");
   const [imageFile, setImageFile] = useState(null);
@@ -35,20 +38,36 @@ const UserProfilePage = () => {
         await uploadResume(resumeFile);
       }
 
-      alert("Profile updated successfully");
+      showModal({
+        title: 'Success',
+        message: 'Profile updated successfully',
+        type: 'success'
+      });
     } catch (err) {
       console.error("Error updating profile:", err);
-      alert("Failed to update profile");
+      showModal({
+        title: 'Error',
+        message: 'Failed to update profile',
+        type: 'error'
+      });
     }
   };
 
   const handleDeleteResume = async () => {
     try {
       await API.delete("/upload/pdf");
-      alert("Resume deleted");
+      showModal({
+        title: 'Success',
+        message: 'Resume deleted',
+        type: 'success'
+      });
     } catch (err) {
       console.error("Error deleting resume:", err);
-      alert("Failed to delete resume");
+      showModal({
+        title: 'Error',
+        message: 'Failed to delete resume',
+        type: 'error'
+      });
     }
   };
 
@@ -144,6 +163,14 @@ const UserProfilePage = () => {
         </form>
       </div>
       <Footer />
+      <Modal
+        isOpen={isOpen}
+        onClose={hideModal}
+        title={modalContent.title}
+        type={modalContent.type}
+      >
+        <p className="text-sm">{modalContent.message}</p>
+      </Modal>
     </>
   );
 };
