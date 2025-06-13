@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from "react";
 import {
   FiLogOut,
@@ -7,6 +9,8 @@ import {
   FiBriefcase,
   FiUsers,
   FiSettings,
+  FiMenu,
+  FiX,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { HiOutlineUserCircle } from "react-icons/hi";
@@ -16,8 +20,9 @@ import DashboardStats from "../../components/admin/DashboardStats";
 
 const AdminPanel = () => {
   const [activePage, setActivePage] = useState("dashboard");
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user"));
@@ -31,96 +36,106 @@ const AdminPanel = () => {
   const getIcon = (page) => {
     switch (page) {
       case "dashboard":
-        return <FiHome className="text-lg" />;
+        return <FiHome className="h-5 w-5" />;
       case "jobs":
-        return <FiBriefcase className="text-lg" />;
+        return <FiBriefcase className="h-5 w-5" />;
       case "applicants":
-        return <FiUsers className="text-lg" />;
+        return <FiUsers className="h-5 w-5" />;
       case "settings":
-        return <FiSettings className="text-lg" />;
+        return <FiSettings className="h-5 w-5" />;
       default:
         return null;
     }
   };
+
+  const navigationItems = [
+    { id: "dashboard", label: "Dashboard" },
+    { id: "jobs", label: "Job Postings" },
+    { id: "applicants", label: "Applicants" },
+    { id: "settings", label: "Settings" },
+  ];
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
 
   return (
-    <div
-      className={`min-h-screen flex transition-colors duration-200 ${
-        darkMode ? "dark bg-gray-900" : "bg-gray-50 text-gray-900"
-      }`}
-    >
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
         className={`${
           sidebarOpen ? "w-64" : "w-20"
-        } ${darkMode ? "dark:bg-gray-800" : "bg-white"} border-r ${
-          darkMode ? "dark:border-gray-700" : "border-gray-300"
-        } p-4 flex flex-col justify-between transition-all duration-300 fixed h-full z-10`}
+        } bg-white border-r border-gray-200 flex flex-col justify-between transition-all duration-300 fixed h-full z-50 lg:relative ${
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
       >
-        <div className="space-y-8">
-          {/* Logo & Toggle */}
-          <div className="flex justify-between items-center p-2">
-            <h1 className="text-xl font-bold dark:text-white text-gray-900">
-              {sidebarOpen ? "InterviewHub" : "IH"}
-            </h1>
+        {/* Header */}
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <FiBriefcase className="h-6 w-6 text-blue-600" />
+              </div>
+              {sidebarOpen && <h1 className="text-xl font-bold text-gray-900">InterviewHub</h1>}
+            </div>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+              className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors hidden lg:block"
             >
-              {sidebarOpen ? "←" : "→"}
+              {sidebarOpen ? <FiX className="h-4 w-4" /> : <FiMenu className="h-4 w-4" />}
+            </button>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors lg:hidden"
+            >
+              <FiX className="h-4 w-4" />
             </button>
           </div>
 
           {/* Profile */}
-          <div
-            className={`flex flex-col items-center gap-2 p-2 rounded-lg ${
-              darkMode ? "dark:bg-gray-700" : "bg-gray-100"
-            }`}
-          >
-            <HiOutlineUserCircle
-              className={`${
-                sidebarOpen ? "text-5xl" : "text-3xl"
-              } text-purple-500`}
-            />
-            {sidebarOpen && (
-              <>
-                <h2 className="font-bold text-lg dark:text-white text-gray-900">
-                  {username}
-                </h2>
-              </>
-            )}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 mb-8 border border-blue-100">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                {username.charAt(0).toUpperCase()}
+              </div>
+              {sidebarOpen && (
+                <div>
+                  <h2 className="font-semibold text-gray-900">{username}</h2>
+                  <p className="text-sm text-gray-600">Administrator</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Navigation */}
-          <nav className="space-y-1">
-            {["dashboard", "jobs", "applicants", "settings"].map((page) => {
-              const isActive = activePage === page;
-              const base = "w-full flex items-center rounded-lg transition";
-              const layout = sidebarOpen
-                ? "justify-start gap-3 px-4 py-3"
-                : "justify-center p-3";
-              const activeStyle = isActive
-                ? darkMode
-                  ? "dark:bg-purple-900 dark:text-white bg-purple-100 text-purple-800"
-                  : "bg-purple-100 text-purple-800"
-                : darkMode
-                ? "dark:hover:bg-gray-700 dark:text-gray-300 hover:bg-gray-100 text-gray-700"
-                : "hover:bg-gray-100 text-gray-700";
-
+          <nav className="space-y-2">
+            {navigationItems.map((item) => {
+              const isActive = activePage === item.id;
               return (
                 <button
-                  key={page}
-                  onClick={() => setActivePage(page)}
-                  className={`${base} ${layout} ${activeStyle}`}
+                  key={item.id}
+                  onClick={() => {
+                    setActivePage(item.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center rounded-lg transition-colors p-3 ${
+                    sidebarOpen ? "justify-start gap-3" : "justify-center"
+                  } ${
+                    isActive
+                      ? "bg-blue-50 text-blue-700 border border-blue-200"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
                 >
-                  {getIcon(page)}
-                  {sidebarOpen && (
-                    <span className="font-medium capitalize">{page}</span>
-                  )}
+                  {getIcon(item.id)}
+                  {sidebarOpen && <span className="font-medium">{item.label}</span>}
                 </button>
               );
             })}
@@ -128,81 +143,77 @@ const AdminPanel = () => {
         </div>
 
         {/* Bottom Controls */}
-        <div className="space-y-2">
+        <div className="p-6 space-y-2 border-t border-gray-200">
           {/* Theme Toggle */}
-          {(() => {
-            const modeToggleClass = [
-              "w-full flex items-center rounded-lg transition",
-              sidebarOpen ? "justify-start gap-3 px-4 py-3" : "justify-center p-3",
-              darkMode
-                ? "dark:hover:bg-gray-700 dark:text-gray-300 hover:bg-gray-100 text-gray-700"
-                : "hover:bg-gray-100 text-gray-700",
-            ].join(" ");
-            return (
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={modeToggleClass}
-              >
-                {darkMode ? (
-                  <FiSun className="text-lg" />
-                ) : (
-                  <FiMoon className="text-lg" />
-                )}
-                {sidebarOpen && (
-                  <span className="font-medium">
-                    {darkMode ? "Light Mode" : "Dark Mode"}
-                  </span>
-                )}
-              </button>
-            );
-          })()}
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className={`w-full flex items-center rounded-lg transition-colors p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 ${
+              sidebarOpen ? "justify-start gap-3" : "justify-center"
+            }`}
+          >
+            {darkMode ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
+            {sidebarOpen && <span className="font-medium">{darkMode ? "Light Mode" : "Dark Mode"}</span>}
+          </button>
 
           {/* Logout */}
-          {(() => {
-            const logoutClass = [
-              "w-full flex items-center rounded-lg transition",
-              sidebarOpen ? "justify-start gap-3 px-4 py-3" : "justify-center p-3",
-              darkMode
-                ? "dark:hover:bg-red-900/30 hover:bg-red-100 text-red-500"
-                : "hover:bg-red-100 text-red-600",
-            ].join(" ");
-            return (
-              <button onClick={handleLogout} className={logoutClass}>
-                <FiLogOut className="text-lg" />
-                {sidebarOpen && <span>Logout</span>}
-              </button>
-            );
-          })()}
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center rounded-lg transition-colors p-3 text-red-600 hover:text-red-700 hover:bg-red-50 ${
+              sidebarOpen ? "justify-start gap-3" : "justify-center"
+            }`}
+          >
+            <FiLogOut className="h-5 w-5" />
+            {sidebarOpen && <span className="font-medium">Logout</span>}
+          </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main
-        className={`flex-1 transition-all duration-300 ${
-          sidebarOpen ? "ml-64" : "ml-20"
-        } p-6`}
-      >
-        <div
-          className={`p-6 rounded-xl ${
-            darkMode
-              ? "dark:bg-gray-800"
-              : "bg-white shadow border border-gray-300"
-          }`}
-        >
-          <h1 className="text-2xl font-bold dark:text-white text-gray-900 mb-6 capitalize">
-            {activePage}
-          </h1>
+      <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? "lg:ml-0" : "lg:ml-0"}`}>
+        {/* Top Bar */}
+        <div className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors lg:hidden"
+              >
+                <FiMenu className="h-5 w-5" />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 capitalize">
+                  {activePage === "dashboard"
+                    ? "Dashboard Overview"
+                    : activePage === "jobs"
+                      ? "Job Management"
+                      : activePage === "applicants"
+                        ? "Applicant Management"
+                        : "Settings"}
+                </h1>
+                <p className="text-sm text-gray-600 mt-1">
+                  {activePage === "dashboard"
+                    ? "Welcome back! Here's what's happening."
+                    : activePage === "jobs"
+                      ? "Create and manage your job postings"
+                      : activePage === "applicants"
+                        ? "Review and process applications"
+                        : "Configure your preferences"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
+        {/* Page Content */}
+        <div className="p-4 sm:p-6 lg:p-8">
           {activePage === "dashboard" && <DashboardStats />}
           {activePage === "jobs" && <JobList darkMode={darkMode} />}
-          {activePage === "applicants" && (
-            <ApplicantsList darkMode={darkMode} />
-          )}
+          {activePage === "applicants" && <ApplicantsList darkMode={darkMode} />}
           {activePage === "settings" && (
-            <div className="flex items-center justify-center h-64">
-              <h2 className="text-xl text-gray-600 dark:text-gray-400">
-                Settings panel coming soon
-              </h2>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+              <FiSettings className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Settings Panel</h2>
+              <p className="text-gray-600">Configuration options will be available here soon.</p>
             </div>
           )}
         </div>

@@ -1,5 +1,7 @@
+"use client"
+
 import { useState, useEffect } from "react";
-import { FiBriefcase, FiUsers, FiClock, FiUser } from "react-icons/fi";
+import { Briefcase, Users, Clock, TrendingUp, Building } from "lucide-react";
 import useGetJobs from "../../hooks/admin/useGetJobs";
 import useGetJobApplications from "../../hooks/admin/useGetJobApplications";
 
@@ -88,118 +90,154 @@ const DashboardStats = () => {
     {
       title: "Total Jobs",
       value: stats.totalJobs,
-      icon: <FiBriefcase className="text-white" />,
-      color: "bg-blue-500 text-blue-100",
+      icon: <Briefcase className="h-6 w-6" />,
+      color: "bg-blue-500",
+      bgColor: "bg-blue-50",
+      textColor: "text-blue-700",
     },
     {
       title: "Total Applicants",
       value: stats.totalApplicants,
-      icon: <FiUsers className="text-white" />,
-      color: "bg-green-500 text-green-100",
+      icon: <Users className="h-6 w-6" />,
+      color: "bg-emerald-500",
+      bgColor: "bg-emerald-50",
+      textColor: "text-emerald-700",
     },
     {
       title: "Pending Reviews",
       value: stats.pendingReviews,
-      icon: <FiClock className="text-white" />,
-      color: "bg-yellow-500 text-yellow-100",
+      icon: <Clock className="h-6 w-6" />,
+      color: "bg-amber-500",
+      bgColor: "bg-amber-50",
+      textColor: "text-amber-700",
+    },
+    {
+      title: "Growth Rate",
+      value: "+12%",
+      icon: <TrendingUp className="h-6 w-6" />,
+      color: "bg-purple-500",
+      bgColor: "bg-purple-50",
+      textColor: "text-purple-700",
     },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statItems.map((stat, index) => (
           <div
             key={index}
-            className={`p-6 rounded-xl shadow-sm flex items-center justify-between ${stat.color}`}
+            className={`${stat.bgColor} rounded-xl p-6 border border-gray-200 hover:shadow-md transition-shadow`}
           >
-            <div>
-              <p className="text-sm font-medium text-white">{stat.title}</p>
-              <p className="text-2xl font-bold mt-1 text-white">{stat.value}</p>
-            </div>
-            <div className="p-3 rounded-full bg-white bg-opacity-10">
-              {stat.icon}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className={`text-sm font-medium ${stat.textColor} mb-1`}>{stat.title}</p>
+                <p className={`text-2xl font-bold ${stat.textColor}`}>{stat.value}</p>
+              </div>
+              <div className={`p-3 rounded-lg ${stat.color} text-white`}>{stat.icon}</div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Applicants */}
-        <div className="bg-[#0e1629] rounded-xl p-6 shadow-sm border border-gray-800 text-white">
-          <h3 className="text-lg font-semibold mb-1">Recent Applications</h3>
-          <p className="text-sm text-gray-400 mb-4">
-            Latest candidate applications
-          </p>
+      {/* Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Recent Applications */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Users className="h-5 w-5 text-blue-600" />
+              Recent Applications
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">Latest candidate submissions</p>
+          </div>
 
-          <ul className="space-y-4">
-            {recentApplicants.map((app, index) => (
-              <li key={index} className="flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center text-white text-xs font-bold uppercase">
-                    <FiUser className="font-bold" />
-                  </div>
-                  <span className="font-medium text-white">
-                    {app.User?.username || "Unknown"}
-                  </span>
-                </div>
-                <span
-                  className={`text-xs px-3 py-1 rounded-full font-medium
-                    ${
-                      app.status === "pending"
-                        ? "bg-blue-500 text-white"
-                        : app.status === "accepted"
-                        ? "bg-green-500 text-white"
-                        : app.status === "rejected"
-                        ? "bg-red-500 text-white"
-                        : "bg-gray-400 text-white"
-                    }`}
-                >
-                  {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
-                </span>
-              </li>
-            ))}
-
-            {recentApplicants.length === 0 && (
-              <li className="text-gray-400 text-sm">No recent applications</li>
+          <div className="p-6">
+            {recentApplicants.length > 0 ? (
+              <ul className="space-y-4">
+                {recentApplicants.map((app, index) => (
+                  <li
+                    key={index}
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-semibold">
+                        {app.User?.username?.charAt(0)?.toUpperCase() || "?"}
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-900 text-sm">{app.User?.username || "Unknown"}</span>
+                        <p className="text-xs text-gray-500">{app.jobTitle}</p>
+                      </div>
+                    </div>
+                    <span
+                      className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
+                        app.status === "pending"
+                          ? "bg-amber-50 text-amber-700 border-amber-200"
+                          : app.status === "accepted"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-red-50 text-red-700 border-red-200"
+                      }`}
+                    >
+                      {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-center py-8">
+                <Users className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                <p className="text-gray-500 text-sm">No recent applications</p>
+              </div>
             )}
-          </ul>
+          </div>
         </div>
 
         {/* Recent Jobs */}
-        <div className="bg-[#0e1629] rounded-xl p-6 shadow-sm border border-gray-800 text-white">
-          <h3 className="text-lg font-semibold mb-1">Recent Jobs</h3>
-          <p className="text-sm text-gray-400 mb-4">
-            Latest job postings overview
-          </p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Briefcase className="h-5 w-5 text-blue-600" />
+              Recent Job Postings
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">Latest job opportunities</p>
+          </div>
 
-          <ul className="space-y-4">
-            {recentJobs.map((job, index) => {
-              const totalApps = job.applications?.length || 0;
-              return (
-                <li
-                  key={index}
-                  className="border-b border-gray-700 pb-3 last:border-none"
-                >
-                  <div className="flex justify-between border rounded-full p-5 items-start">
-                    <div>
-                      <h4 className="text-sm font-semibold">{job.title}</h4>
-                      <p className="text-xs text-gray-300 mt-1 truncate w-64">
-                        {job.description}
-                      </p>
-                    </div>
-                    <div className="text-sm text-white font-medium bg-blue-600 bg-opacity-20 px-3 py-1 rounded-full self-start">
-                      {totalApps} Applicant{totalApps !== 1 && "s"}
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-
-            {recentJobs.length === 0 && (
-              <li className="text-gray-400 text-sm">No recent jobs</li>
+          <div className="p-6">
+            {recentJobs.length > 0 ? (
+              <ul className="space-y-4">
+                {recentJobs.map((job, index) => {
+                  const totalApps = job.applications?.length || 0;
+                  return (
+                    <li
+                      key={index}
+                      className="p-4 rounded-lg border border-gray-200 hover:border-blue-200 hover:bg-blue-50/50 transition-colors"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Building className="h-4 w-4 text-blue-600" />
+                            <h4 className="text-sm font-semibold text-gray-900 truncate">{job.title}</h4>
+                          </div>
+                          <p className="text-xs text-gray-600 line-clamp-2">{job.description}</p>
+                        </div>
+                        <div className="ml-4 text-right">
+                          <div className="bg-blue-100 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                            {totalApps} {totalApps === 1 ? "applicant" : "applicants"}
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className="text-center py-8">
+                <Briefcase className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                <p className="text-gray-500 text-sm">No recent job postings</p>
+              </div>
             )}
-          </ul>
+          </div>
         </div>
       </div>
     </div>

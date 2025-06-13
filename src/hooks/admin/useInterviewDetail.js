@@ -10,30 +10,33 @@ const useInterviewDetail = (interviewId) => {
   useEffect(() => {
     if (!interviewId) return;
 
-    const fetchInterviewDetail = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await API.get(`/admin/interview/detail/${interviewId}`);
-        const convo = res.data.data.parsedConversation.conversation;
-        const video = res.data.data.videofeed?.interview_url;
+ const fetchInterviewDetail = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    console.log('Fetching interview details for ID:', interviewId);
+    const res = await API.get(`/admin/interview/detail/${interviewId}`);
+    console.log('Interview details response:', res.data);
+    
+    const convo = res.data.data.parsedConversation.conversation;
+    const video = res.data.data.videofeed?.interview_url;
 
-        const transcript = convo.map((entry, idx) => ({
-          speaker: entry.sender === "ai" ? "Interviewer" : "Candidate",
-          time: "", 
-          text: entry.text,
-          isConclusion: entry.isConclusion || false,
-        }));
+    const transcript = convo.map((entry, idx) => ({
+      speaker: entry.sender === "ai" ? "Interviewer" : "Candidate",
+      time: "", 
+      text: entry.text,
+      isConclusion: entry.isConclusion || false,
+    }));
 
-        setConversation(transcript);
-        setVideoUrl(video);
-      } catch (err) {
-        setError("Failed to load interview details");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    setConversation(transcript);
+    setVideoUrl(video);
+  } catch (err) {
+    console.error('Error fetching interview details:', err);
+    setError("Failed to load interview details");
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchInterviewDetail();
   }, [interviewId]);
