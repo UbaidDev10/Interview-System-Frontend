@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import useGetJobs from "../../hooks/admin/useGetJobs";
 import useGetJobApplications from "../../hooks/admin/useGetJobApplications";
@@ -5,8 +7,9 @@ import useUpdateApplicationStatus from "../../hooks/admin/useUpdateApplicationSt
 import useScheduleInterview from "../../hooks/admin/useScheduleInterview";
 import ScheduleInterviewModal from "./ScheduleInterviewModal";
 import ResumePreviewModal from "./ResumePreviewModal";
-import Modal from '../ui/Modal';
-import useModal from '../../hooks/useModal';
+import Modal from "../ui/Modal";
+import useModal from "../../hooks/useModal";
+import { Search, Users, Calendar, UserCheck, UserX } from "lucide-react";
 
 const ApplicantsList = () => {
   const { getJobs } = useGetJobs();
@@ -69,13 +72,13 @@ const ApplicantsList = () => {
 
   const handleStatusChange = async (applicationId, newStatus) => {
     if (isUpdating) return;
-    
+
     setIsUpdating(true);
     try {
-      console.log('Updating status:', { applicationId, newStatus });
+      console.log("Updating status:", { applicationId, newStatus });
       const response = await updateStatus(applicationId, newStatus);
-      console.log('Status update response:', response);
-      
+      console.log("Status update response:", response);
+
       if (response?.data?.status === "success") {
         setApplications((prev) =>
           prev.map((app) =>
@@ -88,9 +91,9 @@ const ApplicantsList = () => {
     } catch (err) {
       console.error("Failed to update status", err);
       showModal({
-        title: 'Error',
-        message: 'Failed to update application status. Please try again.',
-        type: 'error'
+        title: "Error",
+        message: "Failed to update application status. Please try again.",
+        type: "error",
       });
     } finally {
       setIsUpdating(false);
@@ -99,19 +102,19 @@ const ApplicantsList = () => {
 
   const handleSchedule = async (userId, data) => {
     if (isUpdating) return;
-    
+
     setIsUpdating(true);
     try {
-      console.log('Scheduling interview with data:', data);
+      console.log("Scheduling interview with data:", data);
       const response = await scheduleInterview(userId, data);
-      console.log('Interview schedule response:', response);
+      console.log("Interview schedule response:", response);
 
       if (response?.data?.id || response?.data?.status === "success") {
         // Update the application status to accepted
         await handleStatusChange(data.application_id, "accepted");
         setInterviewModalOpen(false);
         setSelectedApplication(null);
-        
+
         // Refresh the applications list
         const apps = await getJobApplications(selectedJobId);
         setApplications(Array.isArray(apps) ? apps : []);
@@ -122,15 +125,15 @@ const ApplicantsList = () => {
       console.error("Interview scheduling failed:", error);
       if (error.response?.status === 409) {
         showModal({
-          title: 'Warning',
-          message: 'User already has an interview scheduled during this time.',
-          type: 'warning'
+          title: "Warning",
+          message: "User already has an interview scheduled during this time.",
+          type: "warning",
         });
       } else {
         showModal({
-          title: 'Error',
-          message: 'Failed to schedule interview. Please try again.',
-          type: 'error'
+          title: "Error",
+          message: "Failed to schedule interview. Please try again.",
+          type: "error",
         });
       }
     } finally {
@@ -141,11 +144,11 @@ const ApplicantsList = () => {
   const getStatusBadgeStyles = (status) => {
     switch (status) {
       case "accepted":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
       case "rejected":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+        return "bg-red-50 text-red-700 border-red-200";
       default:
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+        return "bg-amber-50 text-amber-700 border-amber-200";
     }
   };
 
@@ -176,21 +179,7 @@ const ApplicantsList = () => {
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <div className="relative w-full sm:w-72">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-gray-400 dark:text-gray-500"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.3-4.3" />
-                </svg>
+                <Search className="h-4 w-4 text-gray-400" />
               </div>
               <input
                 type="text"
@@ -302,7 +291,7 @@ const ApplicantsList = () => {
                             )}`}
                           >
                             {app.status === "accepted"
-                              ? "Hired"
+                              ? "Scheduled"
                               : app.status === "rejected"
                               ? "Rejected"
                               : "Pending"}
@@ -311,6 +300,18 @@ const ApplicantsList = () => {
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                           {app.User?.email}
                         </p>
+
+                        {app.User?.Documents?.[0]?.file_url && (
+                          <button
+                            onClick={() => {
+                              setPreviewUrl(app.User.Documents[0].file_url);
+                              setPreviewOpen(true);
+                            }}
+                            className="mt-2 inline-flex items-center text-sm text-blue-600 hover:underline cursor-pointer"
+                          >
+                            📄 Preview Resume
+                          </button>
+                        )}
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-300">
@@ -353,39 +354,24 @@ const ApplicantsList = () => {
                         <div className="relative group">
                           <button
                             className={`inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium ${
-                              isUpdating 
-                                ? 'bg-gray-400 cursor-not-allowed' 
-                                : 'bg-green-600 hover:bg-green-700'
-                            } text-white transition-colors`}
+                              isUpdating
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
+                            } text-emerald-700 transition-colors`}
                             onClick={() => handleOpenInterviewModal(app)}
                             disabled={isUpdating}
                           >
                             {isUpdating ? (
                               <>
-                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400 mr-2"></div>
                                 Processing...
                               </>
                             ) : (
                               <>
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="16"
-                                  height="16"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  className="mr-2"
-                                >
-                                  <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                                <span className="hidden sm:inline">Mark as Hired</span>
-                                <span className="sm:hidden">Hire</span>
+                                <UserCheck className="h-4 w-4 mr-2" />
+                                <span className="hidden sm:inline">
+                                  Schedule Interview
+                                </span>
                               </>
                             )}
                           </button>
@@ -400,28 +386,16 @@ const ApplicantsList = () => {
                         <div className="relative group">
                           <button
                             className={`inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium ${
-                              isUpdating 
-                                ? 'bg-gray-400 cursor-not-allowed' 
-                                : 'bg-red-600 hover:bg-red-700'
-                            } text-white transition-colors`}
-                            onClick={() => handleStatusChange(app.id, "rejected")}
+                              isUpdating
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
+                            } text-red-700 transition-colors`}
+                            onClick={() =>
+                              handleStatusChange(app.id, "rejected")
+                            }
                             disabled={isUpdating}
                           >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="mr-2"
-                            >
-                              <path d="M18 6 6 18" />
-                              <path d="m6 6 12 12" />
-                            </svg>
+                            <UserX className="h-4 w-4 mr-2" />
                             <span className="hidden sm:inline">Reject</span>
                           </button>
                           <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-200">

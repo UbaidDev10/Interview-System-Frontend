@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/button";
 
-const InterviewDetailPage = ({ jobId, interviewId }) => {
+const InterviewDetailCard = ({ jobId, interviewId }) => {
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -255,4 +255,4 @@ const InterviewDetailPage = ({ jobId, interviewId }) => {
   );
 };
 
-export default InterviewDetailPage;
+export default InterviewDetailCard;
