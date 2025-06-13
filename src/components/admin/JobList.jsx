@@ -19,6 +19,7 @@ import { Dialog } from "@headlessui/react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Modal from "../ui/Modal";
+import Drawer from "../ui/Drawer";
 
 const JobList = ({ darkMode }) => {
   const { getJobs } = useGetJobs();
@@ -38,6 +39,12 @@ const JobList = ({ darkMode }) => {
     description: "",
     requirements: "",
     skills: "",
+    responsibilities: "",
+    location: "",
+    salary: "",
+    working_hours: "",
+    job_type: "",
+    employment_type: "",
   });
 
   const [deleteJobId, setDeleteJobId] = useState(null);
@@ -89,6 +96,12 @@ const JobList = ({ darkMode }) => {
       description: job.description,
       requirements: job.requirements,
       skills: job.skills.join(", "),
+      responsibilities: job.responsibilities || "",
+      working_hours: job.working_hours || "",
+      job_type: job.job_type || "",
+      employment_type: job.employment_type || "",
+      location: job.location || "",
+      salary: job.salary || "",
     });
     setIsModalOpen(true);
   };
@@ -213,15 +226,15 @@ const JobList = ({ darkMode }) => {
               whileHover={{ y: -2 }}
               className="bg-white dark:bg-gray-900 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 transition-all"
             >
-              <div className="p-6 space-y-4">
-                {/* Job Title + Posted Date */}
-                <div className="flex items-start justify-between">
+              <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 space-y-5">
+                {/* Header */}
+                <div className="flex justify-between items-start flex-wrap">
                   <div className="flex gap-3 items-center">
                     <div className="p-2 bg-blue-100 rounded-xl">
-                      <Briefcase className="h-5 w-5 text-blue-600" />
+                      <Briefcase className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-xl font-bold text-gray-900">
                         {job.title}
                       </h3>
                       <p className="text-sm text-gray-500">
@@ -231,7 +244,7 @@ const JobList = ({ darkMode }) => {
                   </div>
                   <button
                     onClick={() => handleViewInterviews(job.id)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-sm font-medium transition"
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200 text-sm"
                   >
                     <Video className="h-4 w-4" />
                     Interviews
@@ -239,35 +252,41 @@ const JobList = ({ darkMode }) => {
                 </div>
 
                 {/* Job Description */}
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 dark:text-gray-300">
-                    Job Description:
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-gray-700">
+                    Job Description
                   </h4>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {job.description}
-                  </p>
+                  <p className="text-sm text-gray-700">{job.description}</p>
                 </div>
 
+                {/* Responsibilities */}
+                {job.responsibilities && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      Responsibilities
+                    </h4>
+                    <p className="text-sm text-gray-700">
+                      {job.responsibilities}
+                    </p>
+                  </div>
+                )}
+
                 {/* Requirements */}
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 dark:text-gray-300">
-                    Requirements:
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-gray-700">
+                    Requirements
                   </h4>
-                  <ul className="list-disc ml-5 text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                    {job.requirements
-                      .split(",")
-                      .map((req) => req.trim())
-                      .filter((req) => req.length > 0)
-                      .map((req, idx) => (
-                        <li key={idx}>{req}</li>
-                      ))}
+                  <ul className="list-disc pl-5 text-sm text-gray-700">
+                    {job.requirements.split(",").map((req, idx) => (
+                      <li key={idx}>{req.trim()}</li>
+                    ))}
                   </ul>
                 </div>
 
                 {/* Skills */}
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2 dark:text-gray-300">
-                    Skills Required:
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-gray-700">
+                    Skills Required
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {(expandedSkills[job.id]
@@ -276,20 +295,20 @@ const JobList = ({ darkMode }) => {
                     ).map((skill, i) => (
                       <span
                         key={i}
-                        className="text-xs px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200"
+                        className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full"
                       >
-                        {skill.trim()}
+                        {skill}
                       </span>
                     ))}
                     {job.skills.length > 6 && (
                       <button
-                        className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition"
                         onClick={() =>
                           setExpandedSkills((prev) => ({
                             ...prev,
                             [job.id]: !prev[job.id],
                           }))
                         }
+                        className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
                       >
                         {expandedSkills[job.id]
                           ? "Show less"
@@ -299,55 +318,42 @@ const JobList = ({ darkMode }) => {
                   </div>
                 </div>
 
+                {/* Job Meta Info */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm text-gray-700 pt-2 border-t border-gray-100 mt-4">
+                  <p>
+                    <strong>Working Hours:</strong> {job.working_hours || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Job Type:</strong> {job.job_type || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Employment Type:</strong>{" "}
+                    {job.employment_type || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Location:</strong> {job.location || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Salary:</strong> {job.salary || "N/A"}
+                  </p>
+                </div>
+
                 {/* Action Buttons */}
-                <div className="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                   <button
                     onClick={() => handleEdit(job)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md text-sm"
                   >
                     <Edit2 className="h-4 w-4" />
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(job.id)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-red-50 hover:bg-red-100 text-red-700 border border-red-200"
+                    className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-md text-sm"
                   >
                     <Trash2 className="h-4 w-4" />
                     Delete
                   </button>
-
-                  <Modal
-                    isOpen={confirmDeleteOpen}
-                    onClose={() => setConfirmDeleteOpen(false)}
-                    title="Confirm Deletion"
-                  >
-                    <p className="text-sm text-gray-700">
-                      Are you sure you want to delete this job post? This action
-                      cannot be undone.
-                    </p>
-                    <div className="mt-4 flex justify-end gap-3">
-                      <button
-                        onClick={() => setConfirmDeleteOpen(false)}
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={async () => {
-                          try {
-                            await deleteJob(deleteJobId);
-                            setConfirmDeleteOpen(false);
-                            fetchJobs();
-                          } catch (err) {
-                            console.error("Failed to delete job", err);
-                          }
-                        }}
-                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </Modal>
                 </div>
               </div>
             </motion.div>
@@ -356,116 +362,147 @@ const JobList = ({ darkMode }) => {
       )}
 
       {/* Modal */}
-      <Dialog
-        open={isModalOpen}
+      <Drawer
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        className="relative z-50"
+        title={editingJobId ? "Edit Job Posting" : "Create New Job"}
       >
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-2xl rounded-xl bg-white shadow-2xl overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Briefcase className="h-5 w-5 text-blue-600" />
-                </div>
-                <Dialog.Title className="text-xl font-bold text-gray-900">
-                  {editingJobId ? "Edit Job Posting" : "Create New Job"}
-                </Dialog.Title>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-lg hover:bg-white/50 text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <input
+            name="title"
+            value={formData.title}
+            onChange={handleInputChange}
+            placeholder="Job Title"
+            required
+            className="w-full px-4 py-2 border rounded"
+          />
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            placeholder="Job Description"
+            required
+            className="w-full px-4 py-2 border rounded"
+          />
+          <textarea
+            name="requirements"
+            value={formData.requirements}
+            onChange={handleInputChange}
+            placeholder="Requirements"
+            required
+            className="w-full px-4 py-2 border rounded"
+          />
+          <textarea
+            name="responsibilities"
+            value={formData.responsibilities}
+            onChange={handleInputChange}
+            placeholder="Responsibilities"
+            className="w-full px-4 py-2 border rounded"
+          />
+          <input
+            name="skills"
+            value={formData.skills}
+            onChange={handleInputChange}
+            placeholder="Skills (comma separated)"
+            className="w-full px-4 py-2 border rounded"
+          />
+          <input
+            name="working_hours"
+            value={formData.working_hours}
+            onChange={handleInputChange}
+            placeholder="Working Hours"
+            required
+            className="w-full px-4 py-2 border rounded"
+          />
+          <select
+            name="job_type"
+            value={formData.job_type}
+            onChange={handleInputChange}
+            required
+            className="w-full px-4 py-2 border rounded"
+          >
+            <option value="">Select Job Type</option>
+            <option value="Remote">Remote</option>
+            <option value="Onsite">Onsite</option>
+          </select>
+          <select
+            name="employment_type"
+            value={formData.employment_type}
+            onChange={handleInputChange}
+            required
+            className="w-full px-4 py-2 border rounded"
+          >
+            <option value="">Select Employment Type</option>
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+          </select>
+          <input
+            name="location"
+            value={formData.location}
+            onChange={handleInputChange}
+            placeholder="Location"
+            required
+            className="w-full px-4 py-2 border rounded"
+          />
+          <input
+            name="salary"
+            value={formData.salary}
+            onChange={handleInputChange}
+            placeholder="Salary"
+            required
+            className="w-full px-4 py-2 border rounded"
+          />
 
-            {/* Modal Form */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Job Title
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="e.g. Senior Software Engineer"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  required
-                />
-              </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              {editingJobId ? "Update Job" : "Create Job"}
+            </button>
+          </div>
+        </form>
+      </Drawer>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Job Description
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Describe the role and responsibilities..."
-                  rows={4}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Requirements
-                </label>
-                <textarea
-                  name="requirements"
-                  value={formData.requirements}
-                  onChange={handleInputChange}
-                  placeholder="List the required qualifications and experience..."
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Required Skills
-                </label>
-                <input
-                  type="text"
-                  name="skills"
-                  value={formData.skills}
-                  onChange={handleInputChange}
-                  placeholder="e.g. React, Node.js, TypeScript (comma separated)"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Separate multiple skills with commas
-                </p>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm"
-                >
-                  {editingJobId ? "Update Job" : "Create Job"}
-                </button>
-              </div>
-            </form>
-          </Dialog.Panel>
+      <Modal
+        isOpen={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        title="Confirm Deletion"
+      >
+        <p className="text-sm text-gray-700">
+          Are you sure you want to delete this job post? This action cannot be
+          undone.
+        </p>
+        <div className="mt-4 flex justify-end gap-3">
+          <button
+            onClick={() => setConfirmDeleteOpen(false)}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                await deleteJob(deleteJobId);
+                setConfirmDeleteOpen(false);
+                fetchJobs();
+              } catch (err) {
+                console.error("Failed to delete job", err);
+              }
+            }}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
+          >
+            Delete
+          </button>
         </div>
-      </Dialog>
+      </Modal>
     </div>
   );
 };
