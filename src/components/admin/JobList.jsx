@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import useUpdateJobs from "../../hooks/admin/useUpdateJobs";
 import useDeleteJobs from "../../hooks/admin/useDeleteJobs";
 import useGetJobs from "../../hooks/admin/useGetJobs";
@@ -21,7 +21,7 @@ import { useNavigate } from "react-router-dom";
 import Modal from "../ui/Modal";
 import Drawer from "../ui/Drawer";
 
-const JobList = ({ darkMode }) => {
+const JobList = ({ darkMode, setDrawerOpen }) => {
   const { getJobs } = useGetJobs();
   const { updateJob } = useUpdateJobs();
   const { deleteJob } = useDeleteJobs();
@@ -50,6 +50,11 @@ const JobList = ({ darkMode }) => {
   const [deleteJobId, setDeleteJobId] = useState(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [expandedSkills, setExpandedSkills] = useState({});
+
+  const createJobButtonRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const requirementsRef = useRef(null);
+  const responsibilitiesRef = useRef(null);
 
   const fetchJobs = async () => {
     try {
@@ -87,6 +92,7 @@ const JobList = ({ darkMode }) => {
       skills: "",
     });
     setIsModalOpen(true);
+    setDrawerOpen(true);
   };
 
   const handleEdit = (job) => {
@@ -104,6 +110,7 @@ const JobList = ({ darkMode }) => {
       salary: job.salary || "",
     });
     setIsModalOpen(true);
+    setDrawerOpen(true);
   };
 
   const handleDelete = (id) => {
@@ -134,6 +141,7 @@ const JobList = ({ darkMode }) => {
 
       fetchJobs();
       setIsModalOpen(false);
+      setDrawerOpen(false);
     } catch (error) {
       console.error("Error saving job:", error);
     }
@@ -143,6 +151,36 @@ const JobList = ({ darkMode }) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const autosize = (ref) => {
+    if (ref.current) {
+      ref.current.style.height = "auto";
+      ref.current.style.height = ref.current.scrollHeight + "px";
+    }
+  };
+
+  useEffect(() => {
+    autosize(descriptionRef);
+  }, [formData.description]);
+
+  useEffect(() => {
+    autosize(requirementsRef);
+  }, [formData.requirements]);
+
+  useEffect(() => {
+    autosize(responsibilitiesRef);
+  }, [formData.responsibilities]);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      // Delay autosize to ensure drawer is fully rendered
+      setTimeout(() => {
+        autosize(descriptionRef);
+        autosize(requirementsRef);
+        autosize(responsibilitiesRef);
+      }, 0);
+    }
+  }, [isModalOpen]);
 
   return (
     <div className="space-y-6">
@@ -183,6 +221,7 @@ const JobList = ({ darkMode }) => {
 
           {/* Create Job Button */}
           <motion.button
+            ref={createJobButtonRef}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={openModal}
@@ -247,7 +286,7 @@ const JobList = ({ darkMode }) => {
                     className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200 text-sm"
                   >
                     <Video className="h-4 w-4" />
-                    Interviews
+                    View Interviews
                   </button>
                 </div>
 
@@ -364,7 +403,10 @@ const JobList = ({ darkMode }) => {
       {/* Modal */}
       <Drawer
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setDrawerOpen(false);
+        }}
         title={editingJobId ? "Edit Job Posting" : "Create New Job"}
       >
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -382,7 +424,9 @@ const JobList = ({ darkMode }) => {
             onChange={handleInputChange}
             placeholder="Job Description"
             required
-            className="w-full px-4 py-2 border rounded"
+            className="w-full px-4 py-2 border rounded overflow-hidden"
+            ref={descriptionRef}
+            rows="1"
           />
           <textarea
             name="requirements"
@@ -390,14 +434,18 @@ const JobList = ({ darkMode }) => {
             onChange={handleInputChange}
             placeholder="Requirements"
             required
-            className="w-full px-4 py-2 border rounded"
+            className="w-full px-4 py-2 border rounded overflow-hidden"
+            ref={requirementsRef}
+            rows="1"
           />
           <textarea
             name="responsibilities"
             value={formData.responsibilities}
             onChange={handleInputChange}
             placeholder="Responsibilities"
-            className="w-full px-4 py-2 border rounded"
+            className="w-full px-4 py-2 border rounded overflow-hidden"
+            ref={responsibilitiesRef}
+            rows="1"
           />
           <input
             name="skills"
@@ -456,7 +504,10 @@ const JobList = ({ darkMode }) => {
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
             <button
               type="button"
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                setIsModalOpen(false);
+                setDrawerOpen(false);
+              }}
               className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200"
             >
               Cancel
@@ -489,13 +540,9 @@ const JobList = ({ darkMode }) => {
           </button>
           <button
             onClick={async () => {
-              try {
-                await deleteJob(deleteJobId);
-                setConfirmDeleteOpen(false);
-                fetchJobs();
-              } catch (err) {
-                console.error("Failed to delete job", err);
-              }
+              await deleteJob(deleteJobId);
+              setConfirmDeleteOpen(false);
+              fetchJobs();
             }}
             className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
           >
