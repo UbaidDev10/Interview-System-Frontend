@@ -9,7 +9,6 @@ export default function useGeminiChat(userId, interviewId) {
   const [questionQueue, setQuestionQueue] = useState([]);
   const [isProcessingQuestion, setIsProcessingQuestion] = useState(false);
 
-  console.log("userId--->", userId)
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:3000');
     
