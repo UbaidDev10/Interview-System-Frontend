@@ -21,12 +21,12 @@ const JobCard = ({ job, className = "", onViewDetails }) => {
     <Card className={`group hover:shadow-lg transition-all duration-300 border border-gray-200 flex flex-col h-full ${className}`}>
       <CardHeader className="pb-4">
         <div className="flex flex-col gap-3">
-          <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+          <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
             {job.title}
           </CardTitle>
           
           {job.User?.username && (
-            <CardDescription className="text-sm text-gray-500">
+            <CardDescription className="text-lg text-gray-500">
               Posted by: {job.User.username}
             </CardDescription>
           )}
@@ -35,7 +35,7 @@ const JobCard = ({ job, className = "", onViewDetails }) => {
 
       <CardContent className="flex-grow space-y-3">
         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 ">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
