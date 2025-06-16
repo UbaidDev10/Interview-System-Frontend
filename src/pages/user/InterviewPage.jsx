@@ -8,27 +8,19 @@ const InterviewsPage = () => {
   const { getInterviews } = useInterviews();
   const [interviews, setInterviews] = useState([]);
 
-  const sortedInterviews = interviews.sort((a, b) => {
-    return new Date(b.interviewDate) - new Date(a.interviewDate);
-  });
-
   useEffect(() => {
     const loadInterviews = async () => {
       try {
         const raw = await getInterviews();
 
-        const formatted = raw.map((item) => ({
-          id: item.id,
-          interviewDate: new Date(
-            `${item.interview_date.split("T")[0]}T${item.start_time}`
-          ),
-          status: "accepted", // all are scheduled
-          title: item.Application?.Job?.title || "Untitled",
-          description:
-            item.Application?.Job?.description || "No description available",
-        }));
+        // Sort by interview date directly on raw data
+        const sorted = raw.sort((a, b) => {
+          const dateA = new Date(`${a.interview_date.split("T")[0]}T${a.start_time}`);
+          const dateB = new Date(`${b.interview_date.split("T")[0]}T${b.start_time}`);
+          return dateB - dateA;
+        });
 
-        setInterviews(formatted);
+        setInterviews(sorted);
       } catch (err) {
         console.error("Error fetching interviews:", err);
       }
@@ -51,8 +43,8 @@ const InterviewsPage = () => {
               No interviews scheduled yet. Please check again later.
             </div>
           ) : (
-            <div className="space-y-6">
-              {sortedInterviews.map((interview) => (
+            <div className="space-y-6 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
+              {interviews.map((interview) => (
                 <InterviewCard key={interview.id} interview={interview} />
               ))}
             </div>

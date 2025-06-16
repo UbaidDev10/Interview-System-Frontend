@@ -97,21 +97,21 @@ const Homepage = () => {
               <Card className="bg-white/10 backdrop-blur-sm border-white/20">
                 <CardContent className="p-6 text-center">
                   <Briefcase className="h-8 w-8 mx-auto mb-2 text-blue-200" />
-                  <div className="text-2xl font-bold">{jobStats.total}</div>
+                  <div className="text-2xl font-bold text-white">{jobStats.total}</div>
                   <div className="text-blue-200">Total Jobs</div>
                 </CardContent>
               </Card>
               <Card className="bg-white/10 backdrop-blur-sm border-white/20">
                 <CardContent className="p-6 text-center">
                   <ClipboardList className="h-8 w-8 mx-auto mb-2 text-purple-200" />
-                  <div className="text-2xl font-bold">{userStats.total_applications}</div>
+                  <div className="text-2xl font-bold text-white">{userStats.total_applications}</div>
                   <div className="text-purple-200">Applications</div>
                 </CardContent>
               </Card>
               <Card className="bg-white/10 backdrop-blur-sm border-white/20">
                 <CardContent className="p-6 text-center">
                   <CalendarCheck className="h-8 w-8 mx-auto mb-2 text-indigo-200" />
-                  <div className="text-2xl font-bold">{userStats.scheduled_interviews}</div>
+                  <div className="text-2xl font-bold text-white">{userStats.scheduled_interviews}</div>
                   <div className="text-indigo-200">Interviews</div>
                 </CardContent>
               </Card>
