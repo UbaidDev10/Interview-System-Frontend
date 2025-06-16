@@ -73,7 +73,7 @@ const AdminPanel = () => {
       <aside
         className={`${
           sidebarOpen ? "w-64" : "w-20"
-        } bg-white border-r border-gray-200 flex flex-col justify-between transition-all duration-300 fixed h-[100vh] lg:relative ${
+        } bg-white border-r border-gray-200 flex flex-col justify-between transition-all fixed duration-300 position:fixed h-[100vh] lg:relative ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
