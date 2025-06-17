@@ -1,7 +1,5 @@
-"use client"
-
 import { useState, useMemo, useEffect } from "react"
-import { Search, Filter, Clock, Users, Briefcase, ClipboardList, CalendarCheck } from "lucide-react"
+import { Search, Filter, Clock, Users, Briefcase, ClipboardList, CalendarCheck, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -14,13 +12,16 @@ import useFetchJobs from "../../hooks/user/useFetchJobs"
 import useUserStatistics from "@/hooks/user/useUserStatistics"
 
 const Homepage = () => {
-  const { jobs, loading } = useFetchJobs()
+  const { jobs, loading, currentPage, totalPages, totalJobs, fetchJobs } = useFetchJobs()
   const [searchTerm, setSearchTerm] = useState("")
   const [sortOrder, setSortOrder] = useState("newest")
   const [selectedJob, setSelectedJob] = useState(null)
+  const [showDetails, setShowDetails] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
   const [userStats, setUserStats] = useState({
     total_applications: 0,
-    scheduled_interviews: 0
+    scheduled_interviews: 0,
+    available_jobs: 0
   })
   const { getUserStatistics } = useUserStatistics()
 
@@ -31,7 +32,8 @@ const Homepage = () => {
         if (stats) {
           setUserStats({
             total_applications: stats.total_applications,
-            scheduled_interviews: stats.scheduled_interviews
+            scheduled_interviews: stats.scheduled_interviews,
+            available_jobs: stats.available_jobs
           })
         }
       } catch (error) {
@@ -60,23 +62,32 @@ const Homepage = () => {
     })
   }, [jobs, searchTerm, sortOrder])
 
-  const jobStats = useMemo(() => {
-    return {
-      total: jobs.length,
-      filtered: filteredJobs.length,
-      recent: jobs.filter((job) => {
-        const daysDiff = (new Date() - new Date(job.createdAt)) / (1000 * 60 * 60 * 24)
-        return daysDiff <= 7
-      }).length,
-    }
-  }, [jobs, filteredJobs])
+  const handleSearch = (e) => {
+    const value = e.target.value
+    setSearchTerm(value)
+    // Don't reset page when searching - maintain current page
+    fetchJobs(currentPage, value)
+  }
+
+  const handleClearSearch = () => {
+    setSearchTerm("")
+    fetchJobs(1) // Reset to page 1 when clearing search
+  }
 
   const handleViewDetails = (job) => {
     setSelectedJob(job)
+    setIsAnimating(true)
+    setShowDetails(true)
+    setTimeout(() => setIsAnimating(false), 300)
   }
 
   const handleBackToList = () => {
-    setSelectedJob(null)
+    setIsAnimating(true)
+    setShowDetails(false)
+    setTimeout(() => {
+      setSelectedJob(null)
+      setIsAnimating(false)
+    }, 300) 
   }
 
   return (
@@ -97,7 +108,7 @@ const Homepage = () => {
               <Card className="bg-white/10 backdrop-blur-sm border-white/20">
                 <CardContent className="p-6 text-center">
                   <Briefcase className="h-8 w-8 mx-auto mb-2 text-blue-200" />
-                  <div className="text-2xl font-bold text-white">{jobStats.total}</div>
+                  <div className="text-2xl font-bold text-white">{userStats.available_jobs}</div>
                   <div className="text-blue-200">Total Jobs</div>
                 </CardContent>
               </Card>
@@ -120,9 +131,9 @@ const Homepage = () => {
         </div>
       </section>
 
-      <main className="flex-grow max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 w-full">
+      <main className="flex-grow max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 w-full relative overflow-x-hidden">
         {/* Search and Filter Section */}
-        {!selectedJob && (
+        {!showDetails && (
           <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -138,7 +149,7 @@ const Homepage = () => {
                   <Input
                     type="text"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearch}
                     placeholder="Search by title, description, skills..."
                     className="pl-11 h-14 text-base w-full rounded-md border border-gray-300"
                   />
@@ -160,10 +171,10 @@ const Homepage = () => {
               {searchTerm && (
                 <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
                   <span>
-                    Showing {jobStats.filtered} of {jobStats.total} jobs
+                    Showing {filteredJobs.length} of {totalJobs} jobs
                   </span>
-                  {jobStats.filtered !== jobStats.total && (
-                    <Button variant="ghost" size="sm" onClick={() => setSearchTerm("")} className="h-6 px-2 text-xs">
+                  {filteredJobs.length !== totalJobs && (
+                    <Button variant="ghost" size="sm" onClick={handleClearSearch} className="h-6 px-2 text-xs">
                       Clear search
                     </Button>
                   )}
@@ -174,66 +185,107 @@ const Homepage = () => {
         )}
 
         {/* Results Section */}
-        {selectedJob ? (
-          <JobDetails job={selectedJob} onBack={handleBackToList} />
-        ) : (
-          <>
-            {/* Results Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">{searchTerm ? "Search Results" : "Available Jobs"}</h2>
-                <p className="text-gray-600 mt-1">
-                  {loading ? "Loading..." : `${filteredJobs.length} job${filteredJobs.length !== 1 ? "s" : ""} found`}
-                </p>
-              </div>
-            </div>
-
-            {/* Job Listings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {loading ? (
-                <div className="col-span-full flex items-center justify-center py-12">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading amazing opportunities...</p>
-                  </div>
-                </div>
-              ) : filteredJobs.length === 0 ? (
-                <Card className="col-span-full text-center py-12">
-                  <CardContent>
-                    <Briefcase className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      {searchTerm ? "No jobs match your search" : "No jobs available"}
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      {searchTerm ? "Try adjusting your search terms or filters" : "Check back later for new opportunities"}
+        <div className="relative">
+          {/* Job List Section */}
+          <div 
+            className={`transition-all duration-300 ease-in-out ${
+              !showDetails ? 'translate-x-0' 
+              : isAnimating ? '-translate-x-full' 
+              : '-translate-x-full absolute'
+            }`}
+            style={{ width: '100%' }}
+          >
+            {!showDetails && (
+              <>
+                {/* Results Header with Pagination on top right */}
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">{searchTerm ? "Search Results" : "Available Jobs"}</h2>
+                    <p className="text-gray-600 mt-1">
+                      {loading ? "Loading..." : `Showing ${filteredJobs.length} job${filteredJobs.length !== 1 ? "s" : ""} (Page ${currentPage} of ${totalPages})`}
                     </p>
-                    {searchTerm && (
-                      <Button onClick={() => setSearchTerm("")} variant="outline">
-                        Clear search
+                  </div>
+                  
+                  {/* Pagination Controls - Moved to top right */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage <= 1 || loading}
+                        onClick={() => fetchJobs(currentPage - 1, searchTerm)}
+                        className="gap-1"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
                       </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ) : (
-                filteredJobs.map((job) => (
-                  <JobCard
-                    key={job.id}
-                    job={job}
-                    className="h-full flex flex-col"
-                    onViewDetails={handleViewDetails}
-                  />
-                ))
-              )}
-            </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage >= totalPages || loading}
+                        onClick={() => fetchJobs(currentPage + 1, searchTerm)}
+                        className="gap-1"
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
 
-            {/* Load More Section (if needed) */}
-            {filteredJobs.length > 0 && (
-              <div className="text-center mt-12">
-                <p className="text-gray-600 mb-4">Showing all {filteredJobs.length} available positions</p>
-              </div>
+                {/* Job Listings */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {loading ? (
+                    <div className="col-span-full flex items-center justify-center py-12">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading amazing opportunities...</p>
+                      </div>
+                    </div>
+                  ) : filteredJobs.length === 0 ? (
+                    <Card className="col-span-full text-center py-12">
+                      <CardContent>
+                        <Briefcase className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                          {searchTerm ? "No jobs match your search" : "No jobs available"}
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          {searchTerm ? "Try adjusting your search terms or filters" : "Check back later for new opportunities"}
+                        </p>
+                        {searchTerm && (
+                          <Button onClick={handleClearSearch} variant="outline">
+                            Clear search
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    filteredJobs.map((job) => (
+                      <JobCard
+                        key={job.id}
+                        job={job}
+                        className="h-full flex flex-col"
+                        onViewDetails={handleViewDetails}
+                      />
+                    ))
+                  )}
+                </div>
+              </>
             )}
-          </>
-        )}
+          </div>
+
+          {/* Job Details Section */}
+          <div 
+            className={`transition-all duration-300 ease-in-out ${
+              showDetails ? 'translate-x-0' 
+              : isAnimating ? 'translate-x-full' 
+              : 'translate-x-full absolute'
+            }`}
+            style={{ width: '100%' }}
+          >
+            {selectedJob && <JobDetails job={selectedJob} onBack={handleBackToList} />}
+          </div>
+        </div>
       </main>
 
       <Footer />

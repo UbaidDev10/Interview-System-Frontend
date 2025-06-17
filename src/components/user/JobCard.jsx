@@ -1,11 +1,14 @@
-"use client"
-
-import { Calendar, Briefcase } from "lucide-react"
+import { Bookmark, Briefcase, Clock, MapPin } from "lucide-react"
 import { Button } from "../../components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
+import { Card, CardContent, CardHeader } from "../../components/ui/card"
+import { useState } from "react"
+import { motion } from "framer-motion"
 
 const JobCard = ({ job, className = "", onViewDetails }) => {
+  const [isSaved, setIsSaved] = useState(false)
+
   const formatDate = (dateString) => {
+    if (!dateString) return ""
     const date = new Date(dateString)
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - date.getTime())
@@ -17,57 +20,119 @@ const JobCard = ({ job, className = "", onViewDetails }) => {
     return date.toLocaleDateString()
   }
 
+  const getCompanyInitial = (username) => {
+    return username ? username.charAt(0).toUpperCase() : "C"
+  }
+
+  const handleSave = (e) => {
+    e.stopPropagation()
+    setIsSaved(!isSaved)
+  }
+
+  const getJobTypeBadges = () => {
+    const badges = []
+    if (job.employment_type) {
+      badges.push({
+        text: job.employment_type.charAt(0).toUpperCase() + job.employment_type.slice(1),
+        icon: <Briefcase className="h-3 w-3" />
+      })
+    }
+    if (job.job_type) {
+      badges.push({
+        text: job.job_type.charAt(0).toUpperCase() + job.job_type.slice(1),
+        icon: <Clock className="h-3 w-3" />
+      })
+    }
+    return badges
+  }
+
   return (
-    <Card className={`group hover:shadow-lg transition-all duration-300 border border-gray-200 flex flex-col h-full ${className}`}>
-      <CardHeader className="pb-4">
-        <div className="flex flex-col gap-3">
-          <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
-            {job.title}
-          </CardTitle>
-          
-          {job.User?.username && (
-            <CardDescription className="text-lg text-gray-500">
-              Posted by: {job.User.username}
-            </CardDescription>
-          )}
-        </div>
-      </CardHeader>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ y: -5 }}
+    >
+      <Card className={`bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 ${className}`}>
+        <CardHeader className="pb-0">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+            
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                {getCompanyInitial(job.User?.username)}
+              </div>
+              <div className="mb-1">
+                <h3 className="font-medium text-gray-900 text-base">{job.User?.username || "Company"}</h3>
+                <p className="text-gray-500 text-xs">{formatDate(job.createdAt)}</p>
+              </div>
+            </div>
 
-      <CardContent className="flex-grow space-y-3">
-        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-          <div className="flex items-center gap-1 ">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span>{job.location}</span>
+            {/* Save Button - Updated to match design */}
+            <Button
+             
+              variant="ghost"
+              size="sm"
+              onClick={handleSave}
+              className={`h-8 w-8 p-0 rounded-md ${
+                isSaved 
+                  ? "bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-indigo-600/10 text-indigo-600" 
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+            </Button>
           </div>
-          
-          <div className="flex items-center gap-1">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{job.salary}</span>
-          </div>
-          
-          <div className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            <span>{formatDate(job.createdAt)}</span>
-          </div>
-        </div>
-      </CardContent>
+        </CardHeader>
 
-      <div className="px-6 pb-4 pt-2">
-        <Button
-          onClick={() => onViewDetails(job)}
-          size="sm"
-          variant="outline"
-          className="w-full group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:via-purple-600 group-hover:to-indigo-600 group-hover:text-white transition-all"
-        >
-          View Details
-        </Button>
-      </div>
-    </Card>
+        <CardContent className="space-y-4 pt-3">
+          {/* Job Title */}
+          <h2 className="text-xl font-semibold text-gray-900 leading-tight">{job.title}</h2>
+
+          {/* Job Type Badges */}
+          <div className="flex flex-wrap gap-2 ">
+            {getJobTypeBadges().map((badge, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-1 bg-gray-100 text-gray-700 hover:bg-gray-200 font-normal px-2.5 py-1 rounded-full text-xs transition-colors"
+              >
+                {badge.icon}
+                {badge.text}
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t border-gray-100 my-1 mt-12"></div>
+
+          {/* Salary and Location */}
+          <div className="pt-1 pb-2">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                {job.salary && (
+                  <p className="text-lg font-medium text-gray-900">
+                    {job.salary.includes("/hr") ? job.salary : `${job.salary}`}
+                  </p>
+                )}
+                {job.location && (
+                  <div className="flex items-center gap-1 text-gray-500 text-xs">
+                    <span>{job.location}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* View Details Button */}
+              <motion.div whileHover={{ scale: 1.03 }}>
+                <Button
+                  onClick={() => onViewDetails(job)}
+                  className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white px-3 py-1.5 text-sm font-medium rounded-md whitespace-nowrap"
+                >
+                  View Details
+                </Button>
+              </motion.div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   )
 }
 
