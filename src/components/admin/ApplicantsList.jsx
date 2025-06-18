@@ -10,6 +10,8 @@ import ResumePreviewModal from "./ResumePreviewModal";
 import Modal from "../ui/Modal";
 import useModal from "../../hooks/useModal";
 import { Search, UserCheck, UserX } from "lucide-react";
+import { Linkedin } from "lucide-react";
+import { FileText } from "lucide-react";
 
 const ApplicantsList = () => {
   const { getJobs } = useGetJobs();
@@ -178,17 +180,18 @@ const ApplicantsList = () => {
             return (
               <div
                 key={app.id}
-                className="border rounded-lg p-6 bg-white dark:bg-gray-900 shadow"
+                className="bg-white dark:bg-gray-900 shadow-lg rounded-2xl border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300 hover:shadow-xl"
               >
-                <div className="flex justify-between items-center">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                       {app.User?.username}
                     </h3>
                     <p className="text-sm text-gray-500">{app.User?.email}</p>
                   </div>
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeStyles(
+                    className={`px-3 py-1 rounded-full text-xs font-semibold capitalize border ${getStatusBadgeStyles(
                       app.status
                     )}`}
                   >
@@ -196,89 +199,113 @@ const ApplicantsList = () => {
                   </span>
                 </div>
 
+                {/* Resume Summary */}
                 {parsed && (
-                  <div className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 mb-4">
                     {parsed.skills?.length > 0 && (
-                      <div>
-                        <span className="font-medium">Skills:</span>{" "}
-                        {parsed.skills.slice(0, 10).join(", ")}
-                      </div>
+                      <p>
+                        <span className="font-bold text-gray-800 dark:text-white">
+                          Skills:
+                        </span>{" "}
+                        {parsed.skills.join(", ")}
+                      </p>
                     )}
+
                     {parsed.experience?.length > 0 && (
-                      <div>
-                        <span className="font-medium">Experience:</span>{" "}
+                      <p>
+                        <span className="font-bold text-gray-800 dark:text-white">
+                          Experience:
+                        </span>{" "}
                         {parsed.experience[0].jobTitle} at{" "}
                         {parsed.experience[0].companyName}
-                      </div>
+                      </p>
                     )}
 
                     {parsed.education?.length > 0 && (
-                      <div>
-                        <span className="font-medium">Education:</span>{" "}
+                      <p>
+                        <span className="font-semibold text-gray-800 dark:text-white">
+                          Education:
+                        </span>{" "}
                         {parsed.education[0].degree} -{" "}
                         {parsed.education[0].university}
-                      </div>
+                      </p>
                     )}
-                    {parsed.projects?.length > 0 &&
-                      parsed.projects[0].techStack?.length > 0 && (
-                        <div className="mt-2">
-                          <span className="font-semibold">Tech Stack:</span>
-                          <ul className="flex flex-wrap gap-2 mt-1">
-                            {parsed.projects[0].techStack.map((tech, index) => (
-                              <li
-                                key={index}
-                                className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs font-medium"
-                              >
-                                {tech}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
 
-                    {parsed.linkedIn && (
-                      <div>
-                        <a
-                          href={parsed.linkedIn}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-blue-600  hover:underline"
-                        >
-                          LinkedIn Profile
-                        </a>
+                    {parsed.projects?.[0]?.techStack?.length > 0 && (
+                      <div className="pt-2">
+                        <p className="font-bold text-gray-800 dark:text-white">
+                          Tech Stack:
+                        </p>
+                        <ul className="flex flex-wrap gap-2 mt-1">
+                          {parsed.projects[0].techStack.map((tech, i) => (
+                            <li
+                              key={i}
+                              className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs font-medium"
+                            >
+                              {tech}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                   </div>
                 )}
 
-                {app.User?.Documents?.[0]?.file_url && (
-                  <button
-                    onClick={() => {
-                      setPreviewUrl(app.User.Documents[0].file_url);
-                      setPreviewOpen(true);
-                    }}
-                    className="mt-2 inline-flex items-center text-sm text-blue-600 hover:underline cursor-pointer"
-                  >
-                    📄 Preview Resume
-                  </button>
-                )}
+                {/* Action Buttons */}
+                <div className="flex justify-between items-center flex-wrap gap-3 mt-4">
+                  {/* Left side: LinkedIn + Resume */}
+                  <div className="flex gap-3 flex-wrap">
+                    {parsed?.linkedIn && (
+                      <a
+                        href={
+                          parsed.linkedIn.startsWith("http")
+                            ? parsed.linkedIn
+                            : `https://${parsed.linkedIn}`
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-800 text-sm font-medium rounded-md hover:bg-blue-200 transition"
+                      >
+                        <Linkedin className="w-4 h-4" />
+                        LinkedIn
+                      </a>
+                    )}
 
-                {app.status === "pending" && (
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={() => handleOpenInterviewModal(app)}
-                      className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-green-100 text-green-800 hover:bg-green-200"
-                    >
-                      <UserCheck className="h-4 w-4 mr-2" /> Schedule
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange(app.id, "rejected")}
-                      className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-red-100 text-red-800 hover:bg-red-200"
-                    >
-                      <UserX className="h-4 w-4 mr-2" /> Reject
-                    </button>
+                    {app.User?.Documents?.[0]?.file_url && (
+                      <button
+                        onClick={() => {
+                          setPreviewUrl(app.User.Documents[0].file_url);
+                          setPreviewOpen(true);
+                        }}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-100 text-indigo-800 text-sm font-medium rounded-md hover:bg-indigo-200 transition"
+                      >
+                        <FileText className="w-4 h-4" />
+                        Resume
+                      </button>
+                    )}
                   </div>
-                )}
+
+                  {/* Right side: Schedule + Reject */}
+                  {app.status === "pending" && (
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={() => handleOpenInterviewModal(app)}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 text-sm font-semibold rounded-md hover:bg-green-200 transition"
+                      >
+                        <UserCheck className="w-4 h-4" />
+                        Schedule
+                      </button>
+
+                      <button
+                        onClick={() => handleStatusChange(app.id, "rejected")}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-800 text-sm font-semibold rounded-md hover:bg-red-200 transition"
+                      >
+                        <UserX className="w-4 h-4" />
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })

@@ -21,7 +21,7 @@ import useApplyToJob from "../../hooks/user/useApplytoJob";
 import { useState, useEffect } from "react";
 import { Separator } from "../../components/ui/separator";
 
-const JobDetails = ({ job, onBack }) => {
+const JobDetails = ({ job, onBack, onJobApplied }) => {
   const { applyToJob, isApplied } = useApplyToJob();
   const [status, setStatus] = useState("idle");
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +43,7 @@ const JobDetails = ({ job, onBack }) => {
 
     if (["applied", "already-applied"].includes(result.status)) {
       setStatus("applied");
+      onJobApplied?.(job.id);
     } else {
       setStatus("error");
     }
@@ -62,10 +63,50 @@ const JobDetails = ({ job, onBack }) => {
 
       <Card className="border border-gray-200 shadow-sm">
         <CardHeader className="pb-0">
-          <div className="space-y-3">
-            <CardTitle className="text-xl font-bold text-gray-900">
-              {job.title}
-            </CardTitle>
+          <div>
+            <div className="space-y-3">
+              <div className="w-full flex justify-between items-center">
+              <CardTitle className="text-xl font-bold text-gray-900">
+                {job.title}
+              </CardTitle>
+
+              <div className="w-16% pb-4 pt-4">
+                {status === "applied" ? (
+                  <Button
+                    disabled
+                    className=" bg-green-50 text-green-700 hover:bg-green-50 border-green-100 h-10"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Applied
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleApply}
+                    disabled={isLoading}
+                    className="bg-gradient-to-r from-blue-600 rounded-md via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 text-white h-10"
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2  border-white mr-2"></div>
+                        Applying...
+                      </>
+                    ) : (
+                      "Apply Now"
+                    )}
+                  </Button>
+                )}
+
+                {status === "error" && (
+                  <Alert className="mt-3 border-red-200 bg-red-50 p-2">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-sm text-red-700">
+                      Error applying. Please try again.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+              </div>
+            </div>
 
             {job.User?.username && (
               <div className=" text-lg flex items-center gap-2 text-gray-600">
@@ -76,10 +117,10 @@ const JobDetails = ({ job, onBack }) => {
 
             <div className="flex flex-wrap items-center gap-4  text-gray-600">
               {job.location && (
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-blue-600" />
-                <span>{job.location}</span>
-              </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-blue-600" />
+                  <span>{job.location}</span>
+                </div>
               )}
 
               {job.salary && (
@@ -150,42 +191,6 @@ const JobDetails = ({ job, onBack }) => {
             </div>
           )}
         </CardContent>
-
-        <div className="px-6 pb-4 pt-4">
-          {status === "applied" ? (
-            <Button
-              disabled
-              className="w-full bg-green-50 text-green-700 hover:bg-green-50 border-green-100 h-10"
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Applied
-            </Button>
-          ) : (
-            <Button
-              onClick={handleApply}
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 text-white h-10"
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Applying...
-                </>
-              ) : (
-                "Apply Now"
-              )}
-            </Button>
-          )}
-
-          {status === "error" && (
-            <Alert className="mt-3 border-red-200 bg-red-50 p-2">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-sm text-red-700">
-                Error applying. Please try again.
-              </AlertDescription>
-            </Alert>
-          )}
-        </div>
       </Card>
     </div>
   );

@@ -414,7 +414,7 @@ const JobList = ({ darkMode, setDrawerOpen }) => {
             name="title"
             value={formData.title}
             onChange={handleInputChange}
-            placeholder="Job Title"
+            placeholder="Job Title  e.g. Software Engineer"
             required
             className="w-full px-4 py-2 border rounded"
           />
@@ -422,7 +422,7 @@ const JobList = ({ darkMode, setDrawerOpen }) => {
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            placeholder="Job Description"
+            placeholder="Job Description e.g. Responsible for developing software applications..."
             required
             className="w-full px-4 py-2 border rounded overflow-hidden"
             ref={descriptionRef}
@@ -432,7 +432,7 @@ const JobList = ({ darkMode, setDrawerOpen }) => {
             name="requirements"
             value={formData.requirements}
             onChange={handleInputChange}
-            placeholder="Requirements"
+            placeholder="Requirements e.g. Bachelor's degree in Computer Science, 3+ years of experience..."
             required
             className="w-full px-4 py-2 border rounded overflow-hidden"
             ref={requirementsRef}
@@ -442,7 +442,7 @@ const JobList = ({ darkMode, setDrawerOpen }) => {
             name="responsibilities"
             value={formData.responsibilities}
             onChange={handleInputChange}
-            placeholder="Responsibilities"
+            placeholder="Responsibilities e.g. Develop and maintain software applications..."
             className="w-full px-4 py-2 border rounded overflow-hidden"
             ref={responsibilitiesRef}
             rows="1"
@@ -451,14 +451,14 @@ const JobList = ({ darkMode, setDrawerOpen }) => {
             name="skills"
             value={formData.skills}
             onChange={handleInputChange}
-            placeholder="Skills (comma separated)"
+            placeholder="Skills (comma separated) e.g. JavaScript, React, Node.js"
             className="w-full px-4 py-2 border rounded"
           />
           <input
             name="working_hours"
             value={formData.working_hours}
             onChange={handleInputChange}
-            placeholder="Working Hours"
+            placeholder="Working Hours (e.g. 9 AM - 5 PM)"
             required
             className="w-full px-4 py-2 border rounded"
           />
@@ -488,7 +488,7 @@ const JobList = ({ darkMode, setDrawerOpen }) => {
             name="location"
             value={formData.location}
             onChange={handleInputChange}
-            placeholder="Location"
+            placeholder="Location (e.g. New York, Remote)"
             required
             className="w-full px-4 py-2 border rounded"
           />
@@ -496,7 +496,7 @@ const JobList = ({ darkMode, setDrawerOpen }) => {
             name="salary"
             value={formData.salary}
             onChange={handleInputChange}
-            placeholder="Salary"
+            placeholder="Salary (e.g. $80,000 - $100,000)"
             required
             className="w-full px-4 py-2 border rounded"
           />
