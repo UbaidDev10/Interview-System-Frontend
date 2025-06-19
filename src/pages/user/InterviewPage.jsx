@@ -3,6 +3,8 @@ import Navbar from "../../components/user/Navbar";
 import Footer from "../../components/user/Footer";
 import InterviewCard from "../../components/user/InterviewCard";
 import useInterviews from "../../hooks/user/useInterviews";
+import { Card, CardContent } from "../../components/ui/card";
+import { CalendarClock } from "lucide-react";
 
 const InterviewsPage = () => {
   const { getInterviews } = useInterviews();
@@ -15,8 +17,12 @@ const InterviewsPage = () => {
 
         // Sort by interview date directly on raw data
         const sorted = raw.sort((a, b) => {
-          const dateA = new Date(`${a.interview_date.split("T")[0]}T${a.start_time}`);
-          const dateB = new Date(`${b.interview_date.split("T")[0]}T${b.start_time}`);
+          const dateA = new Date(
+            `${a.interview_date.split("T")[0]}T${a.start_time}`
+          );
+          const dateB = new Date(
+            `${b.interview_date.split("T")[0]}T${b.start_time}`
+          );
           return dateB - dateA;
         });
 
@@ -39,9 +45,17 @@ const InterviewsPage = () => {
           </h2>
 
           {interviews.length === 0 ? (
-            <div className="text-center text-red-600 text-lg py-10">
-              No interviews scheduled yet. Please check again later.
-            </div>
+            <Card className="col-span-full text-center py-12">
+              <CardContent>
+                <CalendarClock className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No Interviews Found
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  You currently have no interviews scheduled. Check back later.
+                </p>
+              </CardContent>
+            </Card>
           ) : (
             <div className="space-y-6 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
               {interviews.map((interview) => (

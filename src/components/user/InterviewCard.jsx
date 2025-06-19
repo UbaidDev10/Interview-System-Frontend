@@ -23,11 +23,20 @@ const InterviewCard = ({ interview }) => {
     year: "numeric",
   });
 
-  const formattedTime = interviewDate.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
+  const formatTime = (timeStr) => {
+    if (!timeStr) return "";
+    const [hour, minute] = timeStr.split(":");
+    const date = new Date();
+    date.setHours(+hour, +minute);
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const startTimeFormatted = formatTime(interview.start_time);
+  const endTimeFormatted = formatTime(interview.end_time);
 
   const calculateDuration = () => {
     if (interview.start_time && interview.end_time) {
@@ -54,7 +63,7 @@ const InterviewCard = ({ interview }) => {
             </h3>
             <p className="text-sm text-gray-500">Interview #{interview.id}</p>
           </div>
-            <Badge
+          <Badge
             variant={hasExpired ? "secondary" : "default"}
             className={`rounded-full px-4 py-1 text-sm min-w-[90px] text-center ${
               hasExpired
@@ -85,7 +94,10 @@ const InterviewCard = ({ interview }) => {
             <div>
               <p className="text-xs text-gray-500">Time</p>
               <div className="flex items-center gap-3">
-                <span className="font-medium">{formattedTime}</span>
+                <span className="font-medium">
+                  {startTimeFormatted} - {endTimeFormatted}
+                </span>
+
                 <span className="text-xs bg-gradient-to-r from-blue-100 to-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
                   {calculateDuration()}
                 </span>

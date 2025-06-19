@@ -22,7 +22,7 @@ const useUserProfile = () => {
         fetchProfile();
     },[]);
 
-    return{profile, loading}
+    return { profile, loading, setProfile, fetchProfile }
 }
 
 export default useUserProfile;

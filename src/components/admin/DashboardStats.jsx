@@ -111,14 +111,7 @@ const DashboardStats = () => {
       bgColor: "bg-amber-50",
       textColor: "text-amber-700",
     },
-    {
-      title: "Growth Rate",
-      value: "+12%",
-      icon: <TrendingUp className="h-6 w-6" />,
-      color: "bg-purple-500",
-      bgColor: "bg-purple-50",
-      textColor: "text-purple-700",
-    },
+   
   ];
 
   return (

@@ -4,20 +4,41 @@ import Footer from "../../components/user/Footer";
 import useUserProfile from "../../hooks/admin/useUserProfile";
 import useUploadResume from "../../hooks/admin/useUploadResume";
 import API from "../../api/BaseService";
-import { FiUser, FiUpload, FiFileText, FiTrash2, FiCamera, FiMail, FiCalendar, FiDownload, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
+import {
+  FiUser,
+  FiUpload,
+  FiFileText,
+  FiTrash2,
+  FiCamera,
+  FiMail,
+  FiCalendar,
+  FiDownload,
+  FiCheckCircle,
+  FiAlertCircle,
+  FiX,
+} from "react-icons/fi";
 import Modal from "../../components/ui/Modal";
 import useModal from "../../hooks/useModal";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "../../components/ui/avatar";
 import { Badge } from "../../components/ui/badge";
 import { Separator } from "../../components/ui/separator";
 import { Alert, AlertDescription } from "../../components/ui/alert";
 
 const UserProfilePage = () => {
-  const { profile, loading: profileLoading } = useUserProfile();
+  const { profile, loading: profileLoading, fetchProfile } = useUserProfile();
   const { uploadResume } = useUploadResume();
   const { isOpen, modalContent, showModal, hideModal } = useModal();
 
@@ -26,6 +47,8 @@ const UserProfilePage = () => {
   const [resumeFile, setResumeFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [selectedResumePreview, setSelectedResumePreview] = useState(null);
+  const [selectedResumeName, setSelectedResumeName] = useState(null);
 
   useEffect(() => {
     if (profile) {
@@ -45,6 +68,26 @@ const UserProfilePage = () => {
     }
   };
 
+  const handleResumeChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setResumeFile(file);
+      setSelectedResumeName(file.name);
+      // Create a preview URL for the selected file
+      const previewUrl = URL.createObjectURL(file);
+      setSelectedResumePreview(previewUrl);
+    }
+  };
+
+  const handleRemoveResume = () => {
+    setResumeFile(null);
+    setSelectedResumeName(null);
+    setSelectedResumePreview(null);
+    // Clear the file input
+    const fileInput = document.getElementById('new-resume-upload');
+    if (fileInput) fileInput.value = '';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormLoading(true);
@@ -60,6 +103,8 @@ const UserProfilePage = () => {
 
       if (resumeFile) {
         await uploadResume(resumeFile);
+        // Refresh the profile data to reflect the new resume
+        await fetchProfile();
       }
 
       showModal({
@@ -74,6 +119,8 @@ const UserProfilePage = () => {
       }
       if (resumeFile) {
         setResumeFile(null);
+        setSelectedResumeName(null);
+        setSelectedResumePreview(null);
       }
     } catch (err) {
       console.error("Error updating profile:", err);
@@ -84,24 +131,6 @@ const UserProfilePage = () => {
       });
     } finally {
       setFormLoading(false);
-    }
-  };
-
-  const handleDeleteResume = async () => {
-    try {
-      await API.delete("/upload/pdf");
-      showModal({
-        title: "Success",
-        message: "Resume deleted successfully!",
-        type: "success",
-      });
-    } catch (err) {
-      console.error("Error deleting resume:", err);
-      showModal({
-        title: "Error",
-        message: "Failed to delete resume. Please try again.",
-        type: "error",
-      });
     }
   };
 
@@ -122,8 +151,12 @@ const UserProfilePage = () => {
         <div className="max-w-6xl mx-auto px-6 space-y-8">
           {/* Header - Made larger */}
           <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold text-gray-900">Profile Settings</h1>
-            <p className="text-lg text-gray-600">Manage your account information and preferences</p>
+            <h1 className="text-4xl font-bold text-gray-900">
+              Profile Settings
+            </h1>
+            <p className="text-lg text-gray-600">
+              Manage your account information and preferences
+            </p>
           </div>
 
           <Modal
@@ -141,7 +174,10 @@ const UserProfilePage = () => {
               <CardHeader className="text-center space-y-2">
                 <div className="relative mx-auto">
                   <Avatar className="w-32 h-32 mx-auto">
-                    <AvatarImage src={previewImage || profile?.profile_picture} alt="Profile picture" />
+                    <AvatarImage
+                      src={previewImage || profile?.profile_picture}
+                      alt="Profile picture"
+                    />
                     <AvatarFallback className="text-4xl bg-gradient-to-r from-blue-100 to-indigo-100">
                       <FiUser className="w-16 h-16 text-indigo-600" />
                     </AvatarFallback>
@@ -159,12 +195,16 @@ const UserProfilePage = () => {
                   <div className="flex items-center gap-3">
                     <FiCalendar className="w-5 h-5 text-indigo-600" />
                     <span className="text-gray-600">Joined:</span>
-                    <span className="font-medium">{formatDate(profile?.createdAt)}</span>
+                    <span className="font-medium">
+                      {formatDate(profile?.createdAt)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <FiCalendar className="w-5 h-5 text-indigo-600" />
                     <span className="text-gray-600">Updated:</span>
-                    <span className="font-medium">{formatDate(profile?.updatedAt)}</span>
+                    <span className="font-medium">
+                      {formatDate(profile?.updatedAt)}
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -182,19 +222,29 @@ const UserProfilePage = () => {
                 <form onSubmit={handleSubmit} className="space-y-8">
                   {/* Profile Picture Upload - Larger */}
                   <div className="space-y-4">
-                    <Label className="text-lg font-medium">Profile Picture</Label>
+                    <Label className="text-lg font-medium">
+                      Profile Picture
+                    </Label>
                     <div className="flex items-center gap-6">
                       <Avatar className="w-24 h-24">
-                        <AvatarImage src={previewImage || profile?.profile_picture} alt="Profile preview" />
+                        <AvatarImage
+                          src={previewImage || profile?.profile_picture}
+                          alt="Profile preview"
+                        />
                         <AvatarFallback className="bg-gradient-to-r from-blue-100 to-indigo-100">
                           <FiUser className="w-12 h-12 text-indigo-600" />
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <Label htmlFor="profile-image" className="cursor-pointer">
+                        <Label
+                          htmlFor="profile-image"
+                          className="cursor-pointer"
+                        >
                           <div className="flex items-center gap-3 px-6 py-3 border-2 border-dashed border-indigo-200 rounded-lg hover:border-indigo-300 transition-colors text-base bg-gradient-to-r from-blue-50 to-indigo-50">
                             <FiCamera className="w-5 h-5 text-indigo-600" />
-                            <span className="text-indigo-700">Choose new photo</span>
+                            <span className="text-indigo-700">
+                              Choose new photo
+                            </span>
                           </div>
                           <Input
                             id="profile-image"
@@ -204,15 +254,20 @@ const UserProfilePage = () => {
                             className="hidden"
                           />
                         </Label>
-                        <p className="text-sm text-indigo-500 mt-2">JPG, PNG or GIF. Max size 5MB.</p>
+                        <p className="text-sm text-indigo-500 mt-2">
+                          JPG, PNG or GIF. Max size 5MB.
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   <Separator className="my-6 bg-gradient-to-r from-blue-100 to-indigo-100 h-[2px]" />
-                  
+
                   <div className="space-y-3">
-                    <Label htmlFor="username" className="text-lg font-medium text-indigo-800">
+                    <Label
+                      htmlFor="username"
+                      className="text-lg font-medium text-indigo-800"
+                    >
                       Username
                     </Label>
                     <Input
@@ -229,9 +284,11 @@ const UserProfilePage = () => {
 
                   {/* Resume Section - Larger */}
                   <div className="space-y-6">
-                    <Label className="text-lg font-medium text-indigo-800">Resume/CV</Label>
+                    <Label className="text-lg font-medium text-indigo-800">
+                      Resume/CV
+                    </Label>
 
-                    {profile?.Documents?.[0]?.file_url ? (
+                    {selectedResumePreview ? (
                       <div className="border-2 border-indigo-100 rounded-lg p-6 bg-gradient-to-r from-blue-50 to-indigo-50">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
@@ -239,8 +296,12 @@ const UserProfilePage = () => {
                               <FiFileText className="w-6 h-6 text-indigo-600" />
                             </div>
                             <div>
-                              <p className="font-medium text-base text-indigo-800">{profile.Documents[0].file_name}</p>
-                              <p className="text-sm text-indigo-500">PDF Document</p>
+                              <p className="text-sm font-medium text-gray-900">
+                                {selectedResumeName}
+                              </p>
+                              <p className="text-sm text-indigo-500">
+                                PDF Document
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
@@ -248,7 +309,7 @@ const UserProfilePage = () => {
                               type="button"
                               variant="outline"
                               size="lg"
-                              onClick={() => window.open(profile.Documents[0].file_url, "_blank")}
+                              onClick={() => window.open(selectedResumePreview, "_blank")}
                               className="border-indigo-300 text-indigo-700 hover:bg-indigo-50"
                             >
                               <FiDownload className="w-5 h-5 mr-2 text-indigo-600" />
@@ -256,36 +317,96 @@ const UserProfilePage = () => {
                             </Button>
                             <Button
                               type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={handleRemoveResume}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <FiX className="w-5 h-5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : profile?.Documents?.[0]?.file_url ? (
+                      <div className="border-2 border-indigo-100 rounded-lg p-6 bg-gradient-to-r from-blue-50 to-indigo-50">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg">
+                              <FiFileText className="w-6 h-6 text-indigo-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-base text-indigo-800">
+                                {profile.Documents[0].file_name}
+                              </p>
+                              <p className="text-sm text-indigo-500">
+                                PDF Document
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Button
+                              type="button"
                               variant="outline"
                               size="lg"
-                              onClick={handleDeleteResume}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                              onClick={() =>
+                                window.open(
+                                  profile.Documents[0].file_url,
+                                  "_blank"
+                                )
+                              }
+                              className="border-indigo-300 text-indigo-700 hover:bg-indigo-50"
                             >
-                              <FiTrash2 className="w-5 h-5" />
+                              <FiDownload className="w-5 h-5 mr-2 text-indigo-600" />
+                              View
                             </Button>
+                            <Label
+                              htmlFor="new-resume-upload"
+                              className="cursor-pointer"
+                            >
+                              <div className="flex items-center gap-2 px-4 py-2 border border-indigo-300 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                                <FiUpload className="w-5 h-5 text-indigo-600" />
+                                <span className="text-sm font-medium text-indigo-700">
+                                  Choose New Resume
+                                </span>
+                              </div>
+                              <Input
+                                id="new-resume-upload"
+                                type="file"
+                                accept="application/pdf"
+                                onChange={handleResumeChange}
+                                className="hidden"
+                              />
+                            </Label>
                           </div>
                         </div>
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        <Label htmlFor="resume-upload" className="cursor-pointer">
+                        <Label
+                          htmlFor="resume-upload"
+                          className="cursor-pointer"
+                        >
                           <div className="border-2 border-dashed border-indigo-200 rounded-xl p-8 text-center hover:border-indigo-300 transition-colors bg-gradient-to-r from-blue-50 to-indigo-50">
                             <FiUpload className="w-10 h-10 mx-auto text-indigo-400 mb-3" />
-                            <p className="text-lg font-medium text-indigo-700">Upload your resume</p>
-                            <p className="text-sm text-indigo-500">PDF files only, max 10MB</p>
+                            <p className="text-lg font-medium text-indigo-700">
+                              Upload your resume
+                            </p>
+                            <p className="text-sm text-indigo-500">
+                              PDF files only, max 10MB
+                            </p>
                           </div>
                           <Input
                             id="resume-upload"
                             type="file"
                             accept="application/pdf"
-                            onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+                            onChange={handleResumeChange}
                             className="hidden"
                           />
                         </Label>
-                        {resumeFile && (
+                        {selectedResumeName && (
                           <div className="flex items-center gap-3 text-base text-green-600">
                             <FiCheckCircle className="w-5 h-5" />
-                            {resumeFile.name} selected
+                            {selectedResumeName} selected
                           </div>
                         )}
                       </div>
@@ -294,8 +415,8 @@ const UserProfilePage = () => {
 
                   {/* Submit Button - Larger */}
                   <div className="pt-6">
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       className="w-full h-12 text-lg bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 shadow-md"
                       disabled={formLoading}
                     >
