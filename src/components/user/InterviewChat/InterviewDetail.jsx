@@ -81,9 +81,9 @@ export default function InterviewChat() {
       }
 
       stopVideoRecording();
-      setTimeout(() => {
-        downloadRecording();
-      }, 1000);
+      // setTimeout(() => {
+      //   downloadRecording();
+      // }, 1000);
     }
   }, [isInterviewEnded, stopRecording, clearQueue, stopVideoRecording]);
 
