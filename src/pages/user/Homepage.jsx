@@ -32,6 +32,7 @@ import JobCard from "../../components/user/JobCard";
 import JobDetails from "../../components/user/JobDetails";
 import useFetchJobs from "../../hooks/user/useFetchJobs";
 import useUserStatistics from "@/hooks/user/useUserStatistics";
+import useSavedJobs from "@/hooks/user/useSavedJobs";
 
 const Homepage = () => {
   const { jobs, loading, currentPage, totalPages, totalJobs, fetchJobs } =
@@ -48,12 +49,17 @@ const Homepage = () => {
   });
   const { getUserStatistics } = useUserStatistics();
   const [jobsList, setJobsList] = useState([]);
+  const { saveJob, unsaveJob, savedJobs, fetchSavedJobs } = useSavedJobs();
 
   useEffect(() => {
     if (jobs.length) {
       setJobsList(jobs);
     }
   }, [jobs]);
+
+  useEffect(() => {
+    fetchSavedJobs();
+  }, [fetchSavedJobs]);
 
   const removeJobFromList = (jobId) => {
     setJobsList((prev) => prev.filter((job) => job.id !== jobId));
@@ -96,6 +102,8 @@ const Homepage = () => {
       return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
     });
   }, [jobsList, searchTerm, sortOrder]);
+
+  const savedJobIds = useMemo(() => savedJobs.map(item => item.Job.id), [savedJobs]);
 
   const handleSearch = (e) => {
     const value = e.target.value;
@@ -331,6 +339,9 @@ const Homepage = () => {
                         job={job}
                         className="h-full flex flex-col"
                         onViewDetails={handleViewDetails}
+                        onSave={saveJob}
+                        onUnsave={unsaveJob}
+                        isSaved={savedJobIds.includes(job.id)}
                       />
                     ))
                   )}
@@ -367,4 +378,3 @@ const Homepage = () => {
 };
 
 export default Homepage;
-

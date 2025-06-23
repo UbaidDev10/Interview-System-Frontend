@@ -13,6 +13,7 @@ import UserProfilePage from "./pages/user/UserProfilePage";
 import JobInterviewsPage from "./pages/admin/JobInterviewsPage";
 import InterviewDetailPage from "./pages/admin/InterviewDetailPage";
 import SessionManager from "./components/user/SessionManager";
+import SavedJobsPage from "./pages/user/SavedJobsPage";
 
 
 function App() {
@@ -31,6 +32,9 @@ function App() {
         <Route path="/user/profile" element={<UserProfilePage />} />
         <Route path="/admin/interviews/:jobId" element={<JobInterviewsPage />} />
         <Route path="/admin/interviews/:jobId/:interviewId" element={<InterviewDetailPage />} />
+
+        <Route path="/saved-jobs" element={<SavedJobsPage />} />
+
 
         {/* <Route path="/profile" element={<Profile />} /> */}
       </Routes>

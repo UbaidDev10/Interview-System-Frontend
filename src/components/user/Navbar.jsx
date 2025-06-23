@@ -23,6 +23,10 @@ const Header = ({ activeTab }) => {
     navigate("/login")
   }
 
+  const handleSavedJobs = () => {
+    navigate("/saved-jobs")
+  }
+
   const navigationItems = [
     { id: "home", label: "Home", icon: Home, href: "/user" },
     { id: "interviews", label: "Interviews", icon: Calendar, href: "/Interviews" },
@@ -100,6 +104,16 @@ const Header = ({ activeTab }) => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+
+                 <DropdownMenuItem
+                  onClick={handleSavedJobs}
+                  className="flex items-center gap-2 cursor-pointer text-black"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Saved Jobs
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600"
@@ -107,6 +121,9 @@ const Header = ({ activeTab }) => {
                   <LogOut className="h-4 w-4" />
                   Log out
                 </DropdownMenuItem>
+
+                
+                
               </DropdownMenuContent>
             </DropdownMenu>
 

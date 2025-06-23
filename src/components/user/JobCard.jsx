@@ -1,12 +1,9 @@
 import { Bookmark, Briefcase, Clock, MapPin } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardHeader } from "../../components/ui/card"
-import { useState } from "react"
 import { motion } from "framer-motion"
 
-const JobCard = ({ job, className = "", onViewDetails }) => {
-  const [isSaved, setIsSaved] = useState(false)
-
+const JobCard = ({ job, className = "", onViewDetails, onSave, onUnsave, isSaved }) => {
   const formatDate = (dateString) => {
     if (!dateString) return ""
     const date = new Date(dateString)
@@ -25,9 +22,13 @@ const JobCard = ({ job, className = "", onViewDetails }) => {
   }
 
   const handleSave = (e) => {
-    e.stopPropagation()
-    setIsSaved(!isSaved)
-  }
+    e.stopPropagation();
+    if (isSaved) {
+      onUnsave?.(job.id);
+    } else {
+      onSave?.(job.id);
+    }
+  };
 
   const getJobTypeBadges = () => {
     const badges = []
@@ -69,7 +70,6 @@ const JobCard = ({ job, className = "", onViewDetails }) => {
 
             {/* Save Button - Updated to match design */}
             <Button
-             
               variant="ghost"
               size="sm"
               onClick={handleSave}
